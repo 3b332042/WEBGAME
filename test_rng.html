@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>RNG Test</title>
+</head>
+
+<body>
+    <h1>RNG Test Output</h1>
+    <div id="output"></div>
+    <script>
+        const RootElementPool = ["金", "木", "水", "火", "土"];
+        const state = { rootCount: 1, rootElements: [] };
+
+        function assignRootElementsByRootCount(rootCount) {
+            let count = parseInt(rootCount, 10);
+            if (isNaN(count)) count = 1;
+            count = Math.max(1, Math.min(count, RootElementPool.length));
+
+            if (count === RootElementPool.length) {
+                state.rootElements = [...RootElementPool];
+            } else {
+                const poolCopy = [...RootElementPool];
+                // Shuffle
+                for (let i = poolCopy.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [poolCopy[i], poolCopy[j]] = [poolCopy[j], poolCopy[i]];
+                }
+                state.rootElements = poolCopy.slice(0, count);
+            }
+        }
+
+        const stats = {};
+        for (let i = 0; i < 100; i++) {
+            assignRootElementsByRootCount(1);
+            const el = state.rootElements[0];
+            stats[el] = (stats[el] || 0) + 1;
+        }
+
+        document.getElementById('output').innerText = JSON.stringify(stats, null, 2);
+    </script>
+</body>
+
+</html>

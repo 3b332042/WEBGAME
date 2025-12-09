@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <title>功法閣</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #f5f3ea;
+            font-family: "Noto Serif TC", "Microsoft JhengHei", serif;
+            color: #4a3b32;
+            overflow-y: auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #8d3f32;
+            margin-bottom: 30px;
+            letter-spacing: 4px;
+            font-size: 28px;
+            border-bottom: 2px solid #d4c4a8;
+            padding-bottom: 10px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .player-info {
+            background: #eaddcf;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border: 1px solid #cbbba8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .info-item {
+            font-size: 16px;
+        }
+
+        .info-label {
+            color: #8a7060;
+            margin-right: 8px;
+        }
+
+        .info-value {
+            font-weight: bold;
+            color: #2c1e19;
+        }
+
+        .skill-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .skill-card {
+            background: #fff;
+            border: 1px solid #dcd3c5;
+            border-radius: 6px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skill-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-color: #bfaea0;
+        }
+
+        .skill-card.locked {
+            filter: grayscale(0.8);
+            background: #f0f0f0;
+            opacity: 0.7;
+        }
+
+        .skill-left {
+            flex: 1;
+        }
+
+        .skill-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #8d3f32;
+            margin-bottom: 5px;
+        }
+
+        .skill-type {
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        .type-small {
+            background: #e0f2f1;
+            color: #00695c;
+        }
+
+        .type-ultimate {
+            background: #fbe9e7;
+            color: #d84315;
+        }
+
+        .skill-desc {
+            font-size: 14px;
+            color: #6d5c50;
+            margin-bottom: 8px;
+        }
+
+        .skill-stats {
+            font-size: 13px;
+            color: #8a7a6b;
+        }
+
+        .skill-right {
+            text-align: right;
+            min-width: 140px;
+        }
+
+        .prof-bar-bg {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .prof-bar-fill {
+            height: 100%;
+            background: #8d3f32;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .prof-text {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .action-btn {
+            background: #8d3f32;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .action-btn:hover {
+            background: #a54a39;
+        }
+
+        .action-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .cost-text {
+            font-size: 12px;
+            color: #8d3f32;
+            margin-top: 4px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 8px 16px;
+            background: #4a3b32;
+            color: #f5f3ea;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .empty-tip {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <a href="faction.html" class="back-btn">← 返回</a>
+
+        <h1>功法閣</h1>
+
+        <div class="player-info">
+            <div>
+                <span class="info-label">當前聲望:</span>
+                <span class="info-value" id="repDisplay">0</span>
+            </div>
+            <div>
+                <span class="info-label">我的靈根:</span>
+                <span class="info-value" id="rootDisplay">無</span>
+            </div>
+            <div>
+                <span class="info-label">宗門職位:</span>
+                <span class="info-value" id="rankDisplay">雜役</span>
+            </div>
+        </div>
+
+        <div id="skillContainer" class="skill-list">
+            <!-- JS填充 -->
+        </div>
+    </div>
+
+    <script src="state.js"></script>
+    <script src="skills.js"></script>
+    <script>
+        function render() {
+            // 更新頂部信息
+            const rep = window.state.factionRep || 0;
+            document.getElementById('repDisplay').textContent = rep;
+
+            const roots = window.state.rootElements || [];
+            const rootText = roots.join("、");
+            document.getElementById('rootDisplay').textContent = rootText || "無";
+
+            const ranks = ["外門弟子", "內門弟子", "真傳弟子", "執事長老", "太上長老"];
+            const rank = window.state.factionRank || 0;
+            document.getElementById('rankDisplay').textContent = ranks[rank] || "未知";
+
+            // 渲染技能列表
+            const container = document.getElementById('skillContainer');
+            container.innerHTML = '';
+
+            const learned = window.state.learnedSkills || {};
+
+            let hasSkill = false;
+
+            // 遍歷所有技能，只顯示靈根匹配的
+            for (const key in window.SKILLS) {
+                const skill = window.SKILLS[key];
+                if (!roots.includes(skill.element)) {
+                    continue; // 靈根不符不顯示
+                }
+                hasSkill = true;
+
+                const prof = learned[skill.id] || 0;
+                const isLearned = learned.hasOwnProperty(skill.id);
+                const profTitle = window.getProficiencyTitle(prof);
+                const bonus = window.getProficiencyBonus(prof);
+
+                // 計算下一級消耗
+                // 如果 prof >= 100，沒有消耗
+                let cost = 0;
+                let btnText = "學習";
+                let canDo = true;
+                let failReason = "";
+
+                if (prof >= 100) {
+                    btnText = "已圓滿";
+                    canDo = false;
+                } else {
+                    cost = window.getSkillCost(skill.id, prof);
+                    if (isLearned) {
+                        btnText = "修煉";
+                    }
+
+                    // 檢查是否可執行
+                    const check = window.canLearnOrUpgrade(skill.id);
+                    if (!check.can) {
+                        canDo = false;
+                        failReason = check.reason;
+                    }
+                }
+
+                const card = document.createElement('div');
+                card.className = 'skill-card';
+
+                // 左側信息
+                const rankReqText = skill.rankRequired > 0 ? `[需${ranks[skill.rankRequired]}]` : "";
+                const bonusText = (bonus * 100).toFixed(0) + "%";
+
+                let html = `
+                <div class="skill-left">
+                    <div class="skill-name">
+                        ${skill.name} 
+                        <span class="skill-type ${skill.type === 'ultimate' ? 'type-ultimate' : 'type-small'}">
+                            ${skill.type === 'ultimate' ? '大招' : '小術'}
+                        </span>
+                        <span style="font-size:12px; color:#999; margin-left:5px;">${rankReqText}</span>
+                    </div>
+                    <div class="skill-desc">${skill.desc}</div>
+                    <div class="skill-stats">
+                        當前傷害加成: <span style="color:#d84315;">+${bonusText}</span>
+                    </div>
+                </div>
+                <div class="skill-right">
+                    <div class="prof-text">
+                        ${profTitle} (${prof}/100)
+                    </div>
+                    <div class="prof-bar-bg">
+                        <div class="prof-bar-fill" style="width: ${prof}%"></div>
+                    </div>
+            `;
+
+                if (prof >= 100) {
+                    html += `
+                    <button class="action-btn" disabled>已圓滿</button>
+                `;
+                } else {
+                    html += `
+                    <button class="action-btn" onclick="doUpgrade('${skill.id}')" ${canDo ? '' : 'disabled'}>
+                        ${btnText}
+                    </button>
+                    <div class="cost-text">
+                        ${canDo ? `消耗: ${cost} 聲望` : failReason}
+                    </div>
+                `;
+                }
+
+                html += `</div>`;
+                card.innerHTML = html;
+                container.appendChild(card);
+            }
+
+            if (!hasSkill) {
+                container.innerHTML = '<div class="empty-tip">你的靈根無法在功法閣學習任何目前開放的技能...</div>';
+            }
+        }
+
+        function doUpgrade(skillId) {
+            const result = window.learnOrUpgradeSkill(skillId);
+            if (result.can) {
+                // 成功
+                // 播放音效或提示? 暫時不用
+                render(); // 重繪
+
+                // ⭐ 同步父視窗 (Index)
+                if (window.parent && window.parent.GameStateManager) {
+                    window.parent.GameStateManager.load();
+                }
+            } else {
+                alert(result.reason);
+            }
+        }
+
+        // 初始化
+        if (typeof GameStateManager !== 'undefined') {
+            GameStateManager.load();
+        }
+        render();
+    </script>
+
+</body>
+
+</html>

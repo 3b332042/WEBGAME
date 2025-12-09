@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <title>榮譽堂 – 純 CSS 場景</title>
+    <style>
+        /* ===== 全域 ===== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #030304;
+            font-family: "Microsoft JhengHei", system-ui, sans-serif;
+        }
+
+        /* ===== 大殿場景容器 ===== */
+        .honor-hall {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background:
+                radial-gradient(circle at 50% 15%, #5b3b23 0, #2a150e 45%, #120709 100%);
+            overflow: hidden;
+            color: #ffe7c4;
+        }
+
+        /* ===== 背牆雕花感 ===== */
+        .hall-wall {
+            position: absolute;
+            inset: 80px 120px auto 120px;
+            height: 54%;
+            background:
+                radial-gradient(circle at 50% 0%, rgba(255, 230, 180, 0.14) 0, transparent 55%),
+                repeating-linear-gradient(45deg,
+                    rgba(255, 210, 150, 0.22) 0 6px,
+                    rgba(255, 210, 150, 0.02) 6px 12px);
+            opacity: 0.28;
+            border-radius: 12px;
+            box-shadow:
+                0 0 30px rgba(0, 0, 0, 0.8) inset,
+                0 0 40px rgba(0, 0, 0, 0.9);
+        }
+
+        /* 上方橫梁與裝飾 */
+        .top-beam {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 90px;
+            background:
+                linear-gradient(to bottom, #472716 0, #2e1811 60%, #1a0d09 100%);
+            box-shadow:
+                0 10px 20px rgba(0, 0, 0, 0.8),
+                inset 0 -6px 12px rgba(0, 0, 0, 0.6);
+        }
+
+        .top-beam::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 5px;
+            width: 40%;
+            height: 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 216, 150, 0.6);
+            box-shadow:
+                0 0 10px rgba(255, 216, 150, 0.5),
+                inset 0 0 6px rgba(0, 0, 0, 0.5);
+        }
+
+        /* ===== 左右巨柱 ===== */
+        .pillar {
+            position: absolute;
+            top: 60px;
+            width: 160px;
+            height: calc(100% - 110px);
+            background: radial-gradient(circle at 30% 0%, #8b5533, #3a2016 55%, #1b0f0a 100%);
+            box-shadow:
+                inset 0 0 30px rgba(0, 0, 0, 0.8),
+                0 0 35px rgba(0, 0, 0, 0.9);
+        }
+
+        .pillar.left {
+            left: 40px;
+        }
+
+        .pillar.right {
+            right: 40px;
+        }
+
+        .pillar::before {
+            content: "";
+            position: absolute;
+            inset: 10px;
+            border-radius: 80px;
+            border: 2px solid rgba(255, 217, 160, 0.35);
+            opacity: 0.8;
+        }
+
+        /* ===== 垂幕 ===== */
+        .curtain {
+            position: absolute;
+            top: 60px;
+            width: 32%;
+            height: 50%;
+            background:
+                radial-gradient(circle at 20% 0%, rgba(255, 255, 255, 0.25), transparent 55%),
+                linear-gradient(to bottom, #1d2650 0, #0d1028 60%, #050612 100%);
+            opacity: 0.9;
+            filter: blur(0.4px);
+        }
+
+        .curtain.left {
+            left: 70px;
+            clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
+        }
+
+        .curtain.right {
+            right: 70px;
+            clip-path: polygon(15% 0, 100% 0, 100% 100%, 15% 100%);
+        }
+
+        /* ===== 台階與地面 ===== */
+        .stairs-area {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 48%;
+            background: radial-gradient(circle at 50% 0%, rgba(255, 210, 150, 0.08), transparent 60%);
+        }
+
+        .stair {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 34px;
+            background: linear-gradient(to bottom, #7e2830, #3c1115);
+            border-top: 3px solid #e3b56a;
+            box-shadow:
+                0 -5px 10px rgba(0, 0, 0, 0.7),
+                inset 0 2px 4px rgba(255, 220, 180, 0.15);
+        }
+
+        .stair.s1 {
+            bottom: 30px;
+            width: 76%;
+        }
+
+        .stair.s2 {
+            bottom: 64px;
+            width: 80%;
+        }
+
+        .stair.s3 {
+            bottom: 98px;
+            width: 84%;
+        }
+
+        .stair.s4 {
+            bottom: 132px;
+            width: 88%;
+        }
+
+        .stair.s5 {
+            bottom: 166px;
+            width: 92%;
+        }
+
+        /* 中央高台 */
+        .center-stage {
+            position: absolute;
+            bottom: 220px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40%;
+            height: 110px;
+            background: linear-gradient(to top, #6b2726, #913733);
+            border-top: 4px solid #f2c378;
+            border-radius: 8px;
+            box-shadow:
+                0 0 35px rgba(0, 0, 0, 0.9),
+                0 0 40px rgba(255, 210, 150, 0.35);
+        }
+
+        .center-carpet {
+            position: absolute;
+            bottom: 236px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 34%;
+            height: 70px;
+            background: radial-gradient(ellipse at center, #9e4040 0, #511319 60%, transparent 70%);
+            border-radius: 50%;
+            box-shadow:
+                0 0 25px rgba(0, 0, 0, 0.9),
+                inset 0 0 8px rgba(255, 210, 150, 0.25);
+        }
+
+        .hall-glow {
+            position: absolute;
+            bottom: 260px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 420px;
+            height: 420px;
+            background:
+                radial-gradient(circle, rgba(255, 215, 170, 0.38) 0, transparent 70%);
+            filter: blur(14px);
+            opacity: 0.5;
+        }
+
+        .incense {
+            position: absolute;
+            bottom: 260px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 52px;
+            height: 40px;
+            background: radial-gradient(circle at 50% 0%, #ffeec8 0, #c48b4a 60%, #754021 100%);
+            border-radius: 50% 50% 46% 46%;
+            box-shadow:
+                0 0 10px rgba(255, 214, 160, 0.8),
+                0 10px 15px rgba(0, 0, 0, 0.8);
+        }
+
+        .incense::before {
+            content: "";
+            position: absolute;
+            top: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 18px;
+            height: 24px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 50% 0%, #fffbe8 0, rgba(255, 244, 200, 0.3) 50%, transparent 70%);
+            filter: blur(1px);
+            opacity: 0.9;
+        }
+
+        .incense::after {
+            content: "";
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 35px;
+            height: 60px;
+            background:
+                radial-gradient(circle at 50% 10%, rgba(255, 255, 255, 0.9), transparent 55%);
+            filter: blur(6px);
+            opacity: 0.4;
+        }
+
+        .hall-characters {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        .role {
+            position: absolute;
+            text-align: center;
+            pointer-events: auto;
+            transition: transform 0.25s ease-out, filter 0.25s ease-out;
+        }
+
+        .role:hover {
+            transform: translateY(-6px) scale(1.06);
+            filter: brightness(1.1);
+        }
+
+        .role-label {
+            margin-top: 4px;
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 220, 160, 0.7);
+            font-size: 13px;
+        }
+
+        .char {
+            position: relative;
+            width: 80px;
+            height: 130px;
+            margin: 0 auto;
+        }
+
+        .char::before {
+            content: "";
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70px;
+            height: 16px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 0, 0, 0.7), transparent 70%);
+        }
+
+        .head {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 20%, #f9e2cf, #e0b89a);
+            box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+        }
+
+        .hair {
+            position: absolute;
+            inset: -6px -4px 14px -4px;
+            border-radius: 40px 40px 30px 30px;
+            background: linear-gradient(to bottom, #2b1915, #1a0c09);
+        }
+
+        .robe {
+            position: absolute;
+            top: 38px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 72px;
+            height: 84px;
+            border-radius: 50px 50px 10px 10px;
+            background: linear-gradient(to bottom, #555, #222);
+            box-shadow:
+                0 0 12px rgba(0, 0, 0, 0.8),
+                inset 0 0 10px rgba(0, 0, 0, 0.6);
+        }
+
+        .belt {
+            position: absolute;
+            top: 74px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 10px;
+            border-radius: 999px;
+            background: linear-gradient(to right, #d2b47a, #f8e3aa, #c89f60);
+            box-shadow: 0 0 6px rgba(255, 222, 160, 0.7);
+        }
+
+        .collar {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 32px;
+            height: 18px;
+            background: linear-gradient(135deg, #f8f4ec 0, #d4c8b4 50%, #f8f4ec 100%);
+            clip-path: polygon(0 0, 100% 0, 50% 100%);
+            opacity: 0.9;
+        }
+
+        .char-master .robe {
+            background: linear-gradient(to bottom, #b94128 0, #6b1713 40%, #3b0b0c 100%);
+        }
+
+        .char-master .belt {
+            background: linear-gradient(to right, #f7e19f, #ffe9c8, #f7e19f);
+        }
+
+        .char-master .hair {
+            background: linear-gradient(to bottom, #201010, #080405);
+        }
+
+        .char-master .head::after {
+            content: "";
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 18px;
+            background: linear-gradient(to bottom, #2a1510, #140806);
+            border-radius: 4px 4px 0 0;
+            box-shadow:
+                0 2px 0 #a38050,
+                0 0 8px rgba(0, 0, 0, 0.7);
+        }
+
+        .char-master .robe::after {
+            content: "";
+            position: absolute;
+            inset: 10px 16px 14px 16px;
+            border-radius: 40px 40px 8px 8px;
+            border: 2px solid rgba(255, 220, 150, 0.9);
+        }
+
+        .char-elder .robe {
+            background: linear-gradient(to bottom, #7f3a80 0, #39193f 60%, #1d0b23 100%);
+        }
+
+        .char-elder .belt {
+            background: linear-gradient(to right, #e1c8ff, #f5e9ff, #d8b7ff);
+        }
+
+        .char-elder .robe::after {
+            content: "";
+            position: absolute;
+            top: 6px;
+            left: -6px;
+            right: -6px;
+            height: 18px;
+            border-radius: 40px;
+            background: radial-gradient(circle at 0 50%, rgba(250, 220, 250, 0.8), transparent 60%),
+                radial-gradient(circle at 100% 50%, rgba(250, 220, 250, 0.8), transparent 60%);
+            opacity: 0.8;
+        }
+
+        .char-guard .robe {
+            background: linear-gradient(to bottom, #282828 0, #111 60%, #050505 100%);
+        }
+
+        .char-guard .belt {
+            background: linear-gradient(to right, #f0d38f, #f9e7b7, #f0d38f);
+        }
+
+        .char-guard .robe::after {
+            content: "";
+            position: absolute;
+            top: -6px;
+            left: -10px;
+            right: -10px;
+            height: 40px;
+            background: linear-gradient(to bottom, #5a2d18, #281009);
+            border-radius: 50px 50px 30px 30px;
+            opacity: 0.9;
+        }
+
+        .char-core .robe {
+            background: linear-gradient(to bottom, #2f6aa6 0, #163b5f 60%, #0b2037 100%);
+        }
+
+        .char-core .belt {
+            background: linear-gradient(to right, #b9e3ff, #e1f4ff, #b9e3ff);
+        }
+
+        .char-inner .robe {
+            background: linear-gradient(to bottom, #2f8b55 0, #1b4b2f 60%, #0d2417 100%);
+        }
+
+        .char-inner .belt {
+            background: linear-gradient(to right, #c8f1c0, #e5ffe1, #c8f1c0);
+        }
+
+        .role.master {
+            bottom: 230px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .role.elder-l {
+            bottom: 220px;
+            left: 20%;
+        }
+
+        .role.elder-r {
+            bottom: 220px;
+            left: 70%;
+        }
+
+        .role.guard-l {
+            bottom: 220px;
+            left: 10%;
+        }
+
+        .role.guard-r {
+            bottom: 220px;
+            left: 80%;
+        }
+
+        .role.core-l {
+            bottom: 50px;
+            left: 10%;
+        }
+
+        .role.core-r {
+            bottom: 50px;
+            left: 80%;
+        }
+
+        .role.inner-l {
+            bottom: 7px;
+            left: 20%;
+        }
+
+        .role.inner-r {
+            bottom: 7px;
+            left: 70%;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 18px;
+            left: 26px;
+            padding: 6px 18px;
+            border-radius: 18px;
+            background: rgba(26, 18, 16, 0.78);
+            color: #f6e7c6;
+            border: 1px solid rgba(246, 231, 198, 0.85);
+            cursor: pointer;
+            font-size: 13px;
+            letter-spacing: 2px;
+            z-index: 9999;
+        }
+
+        .back-btn:hover {
+            background: rgba(40, 28, 24, 0.9);
+            box-shadow: 0 0 8px rgba(246, 231, 198, 0.7);
+        }
+
+        .dialogue-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .dialogue-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .dialogue-box {
+            position: relative;
+            width: 600px;
+            max-width: 90%;
+            background: #1a0f0a;
+            border: 2px solid #8b5533;
+            border-radius: 8px;
+            padding: 24px 32px;
+            box-shadow:
+                0 0 0 4px #2e1811,
+                0 10px 40px rgba(0, 0, 0, 0.8);
+            color: #e6dcc8;
+            font-size: 18px;
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        .dialogue-box::before {
+            content: "";
+            position: absolute;
+            inset: 4px;
+            border: 1px solid rgba(255, 215, 150, 0.15);
+            pointer-events: none;
+        }
+
+        .dialogue-title {
+            font-size: 22px;
+            color: #ffb86c;
+            margin-bottom: 12px;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255, 184, 108, 0.3);
+            padding-bottom: 8px;
+        }
+
+        .dialogue-text {
+            min-height: 60px;
+        }
+
+        .dialogue-close {
+            margin-top: 20px;
+            text-align: right;
+        }
+
+        .close-btn {
+            background: #3b2016;
+            border: 1px solid #8b5533;
+            color: #dacba9;
+            padding: 6px 20px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: #5a3222;
+            color: #fff;
+        }
+
+        .challenge-btn {
+            background: #8b3a3a;
+            border: 1px solid #bf5b5b;
+            color: #ffe4c4;
+            padding: 6px 20px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.2s;
+            margin-right: 10px;
+        }
+
+        .challenge-btn:hover {
+            background: #a64444;
+            color: #fff;
+            box-shadow: 0 0 8px rgba(255, 100, 100, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+    <button class="back-btn" onclick="backToFaction()">返回宗門大殿</button>
+    <div class="honor-hall">
+        <div class="top-beam"></div>
+        <div class="hall-wall"></div>
+        <div class="pillar left"></div>
+        <div class="pillar right"></div>
+        <div class="curtain left"></div>
+        <div class="curtain right"></div>
+
+        <div class="stairs-area">
+            <div class="stair s1"></div>
+            <div class="stair s2"></div>
+            <div class="stair s3"></div>
+            <div class="stair s4"></div>
+            <div class="stair s5"></div>
+        </div>
+
+        <div class="center-stage"></div>
+        <div class="center-carpet"></div>
+        <div class="hall-glow"></div>
+        <div class="incense"></div>
+
+        <div class="hall-characters">
+
+            <div class="role master" onclick="showDialogue('master')">
+                <div class="char char-master">
+                    <div class="hair"></div>
+                    <div class="head"></div>
+                    <div class="robe"></div>
+                    <div class="collar"></div>
+                    <div class="belt"></div>
+                </div>
+                <div class="role-label">宗主</div>
+            </div>
+
+            <div class="role elder-l" onclick="showDialogue('elder-l')">
+                <div class="char char-elder">
+                    <div class="hair"></div>
+                    <div class="head"></div>
+                    <div class="robe"></div>
+                    <div class="collar"></div>
+                    <div class="belt"></div>
+                </div>
+                <div class="role-label">長老</div>
+            </div>
+            <div class="role elder-r" onclick="showDialogue('elder-r')">
+                <div class="char char-elder">
+                    <div class="hair"></div>
+                    <div class="head"></div>
+                    <div class="robe"></div>
+                    <div class="collar"></div>
+                    <div class="belt"></div>
+                </div>
+                <div class="role-label">長老</div>
+            </div>
+
+            <div class="role guard-l" onclick="showDialogue('guard-l')">
+                <div class="char char-guard">
+                    <div class="hair"></div>
+                    <div class="head"></div>
+                    <div class="robe"></div>
+                    <div class="collar"></div>
+                    <div class="belt"></div>
+                </div>
+                <div class="role-label">護法</div>
+            </div>
+            <div class="role guard-r" onclick="showDialogue('guard-r')">
+                <div class="char char-guard">
+                    <div class="hair"></div>
+                    <div class="head"></div>
+                    <div class="robe"></div>
+                    <div class="collar"></div>
+                    <div class="belt"></div>
+                </div>
+                <div class="role-label">護法</div>
+            </div>
+
+            <div class="role core-l" onclick="showDialogue('core-l')">
+                <div class="char char-core">
+                    <div class="hair"></div>
+                    <div class="head"></div>
+                    <div class="robe"></div>
+                    <div class="collar"></div>
+                    <div class="belt"></div>
+                </div>
+                <div class="role-label">真傳弟子</div>
+            </div>
+            <div class="role core-r" onclick="showDialogue('core-r')">
+                <div class="char char-core">
+                    <div class="hair"></div>
+                    <div class="head"></div>
+                    <div class="robe"></div>
+                    <div class="collar"></div>
+                    <div class="belt"></div>
+                </div>
+                <div class="role-label">真傳弟子</div>
+            </div>
+
+            <div class="role inner-l" onclick="showDialogue('inner-l')">
+                <div class="char char-inner">
+                    <div class="hair"></div>
+                    <div class="head"></div>
+                    <div class="robe"></div>
+                    <div class="collar"></div>
+                    <div class="belt"></div>
+                </div>
+                <div class="role-label">內門弟子</div>
+            </div>
+            <div class="role inner-r" onclick="showDialogue('inner-r')">
+                <div class="char char-inner">
+                    <div class="hair"></div>
+                    <div class="head"></div>
+                    <div class="robe"></div>
+                    <div class="collar"></div>
+                    <div class="belt"></div>
+                </div>
+                <div class="role-label">內門弟子</div>
+            </div>
+
+        </div>
+
+        <div class="dialogue-overlay" id="dialogueOverlay" onclick="closeDialogue()">
+            <div class="dialogue-box" onclick="event.stopPropagation()">
+                <div class="dialogue-title" id="dTitle">角色名稱</div>
+                <div class="dialogue-text" id="dText">這裡是對話內容...</div>
+                <div class="dialogue-close" id="dActions">
+                    <!-- 動態插入按鈕 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function backToFaction() {
+            if (window.parent && window.parent.document) {
+                const frame = window.parent.document.getElementById("faction-frame");
+                if (frame) {
+                    frame.src = "faction.html";
+                    return;
+                }
+            }
+            window.location.href = "faction.html";
+        }
+
+        const npcData = {
+            'master': {
+                name: "宗主 · 玄天尊者",
+                text: "吾輩修仙，當心懷天地。近日魔氣躁動，爾等需加倍小心。",
+                bossId: "npc_master",
+                repCost: 2000
+            },
+            'elder-l': {
+                name: "傳功長老",
+                text: "基礎不牢，地動山搖。切記不可貪功冒進。",
+                bossId: "npc_elder",
+                repCost: 800
+            },
+            'elder-r': {
+                name: "執法長老",
+                text: "門規森嚴，犯禁者必究。望你好自為之。",
+                bossId: "npc_elder",
+                repCost: 800
+            },
+            'guard-l': {
+                name: "左護法",
+                text: "大殿重地，不得喧嘩。",
+                bossId: "npc_guard",
+                repCost: 1200
+            },
+            'guard-r': {
+                name: "右護法",
+                text: "只有對宗門有大貢獻者，方可進入此地接受賞賜。",
+                bossId: "npc_guard",
+                repCost: 1200
+            },
+            'core-l': {
+                name: "大師兄",
+                text: "這次試煉我一定會拔得頭籌，你也要加油。",
+                bossId: "npc_core",
+                repCost: 500
+            },
+            'core-r': {
+                name: "二師姊",
+                text: "聽說山下又出現了新的妖獸，真想去試試身手。",
+                bossId: "npc_core",
+                repCost: 500
+            },
+            'inner-l': {
+                name: "內門弟子",
+                text: "宗主的威壓太強了，我連抬頭都不敢...",
+                bossId: "npc_inner",
+                repCost: 300
+            },
+            'inner-r': {
+                name: "內門弟子",
+                text: "只要努力修煉，總有一天我也能成為真傳弟子！",
+                bossId: "npc_inner",
+                repCost: 300
+            }
+        };
+
+        function showDialogue(npcId) {
+            const data = npcData[npcId];
+            if (!data) return;
+
+            const dTitle = document.getElementById("dTitle");
+            const dText = document.getElementById("dText");
+            const dActions = document.getElementById("dActions");
+
+            dTitle.textContent = data.name;
+
+            // 顯示對話和所需聲望
+            let textContent = data.text;
+            if (data.repCost) {
+                textContent += `\n\n【挑戰消耗】需要 ${data.repCost} 點聲望`;
+            }
+            dText.textContent = textContent;
+            dActions.innerHTML = "";
+
+            const btnChallenge = document.createElement("button");
+            btnChallenge.className = "challenge-btn";
+            btnChallenge.textContent = "發起挑戰";
+            btnChallenge.onclick = function () {
+                startChallenge(data.bossId);
+            };
+            dActions.appendChild(btnChallenge);
+
+            const btnClose = document.createElement("button");
+            btnClose.className = "close-btn";
+            btnClose.textContent = "關閉";
+            btnClose.onclick = closeDialogue;
+            dActions.appendChild(btnClose);
+
+            document.getElementById("dialogueOverlay").classList.add("active");
+        }
+
+        function closeDialogue() {
+            document.getElementById("dialogueOverlay").classList.remove("active");
+        }
+
+        // ★ 這裡是重點：改成和 goHonor 一樣，改父頁 iframe.src ★
+        function startChallenge(bossId) {
+            // 檢查聲望是否足夠
+            const npcEntry = Object.values(npcData).find(npc => npc.bossId === bossId);
+            if (!npcEntry) {
+                alert("找不到對應的挑戰對象！");
+                return;
+            }
+
+            const repCost = npcEntry.repCost || 0;
+
+            // 嘗試從父頁面獲取與修改
+            if (window.parent && window.parent.state && typeof window.parent.state.factionRep === 'number') {
+                const currentRep = window.parent.state.factionRep;
+
+                if (currentRep < repCost) {
+                    alert(`聲望不足！\n需要：${repCost} 點聲望\n當前：${currentRep} 點聲望`);
+                    return;
+                }
+
+                // 扣除並保存
+                window.parent.state.factionRep -= repCost;
+                if (window.parent.GameStateManager) {
+                    window.parent.GameStateManager.save();
+                }
+                console.log(`[Parent] 消耗 ${repCost} 點聲望，剩餘 ${window.parent.state.factionRep}`);
+
+            } else {
+                // Fallback: 讀寫 localStorage (單獨開啟時)
+                let currentRep = 0;
+                let gameState = {};
+                try {
+                    const savedData = localStorage.getItem("xiuxian-save");
+                    if (savedData) {
+                        gameState = JSON.parse(savedData);
+                        currentRep = gameState.factionRep || 0;
+                    }
+                } catch (e) {
+                    console.error("讀取存檔失敗:", e);
+                }
+
+                if (currentRep < repCost) {
+                    alert(`聲望不足！\n需要：${repCost} 點聲望\n當前：${currentRep} 點聲望`);
+                    return;
+                }
+
+                // 扣除並保存
+                try {
+                    gameState.factionRep = currentRep - repCost;
+                    localStorage.setItem("xiuxian-save", JSON.stringify(gameState));
+                    console.log(`[LS] 消耗 ${repCost} 點聲望，剩餘 ${gameState.factionRep}`);
+                } catch (e) {
+                    console.error("扣除聲望失敗:", e);
+                }
+            }
+
+            // 設定 Boss ID
+            try {
+                localStorage.setItem("battle-boss", bossId || "");
+            } catch (e) {
+                console.error("localStorage error:", e);
+            }
+
+            try {
+                localStorage.setItem("battle-boss", bossId || "");
+            } catch (e) {
+                console.error("localStorage error:", e);
+            }
+
+            const battlePage = "123.html"; // 戰鬥頁檔名
+
+            // 情況一：在主頁的 faction-frame 裡
+            if (window.parent && window.parent.document) {
+                const frame = window.parent.document.getElementById("faction-frame");
+                if (frame) {
+                    frame.src = battlePage;
+                    return;
+                }
+            }
+
+            // 情況二：單獨開 honor-hall.html 直接跳轉
+            window.location.href = battlePage;
+        }
+    </script>
+</body>
+
+</html>
