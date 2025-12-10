@@ -8,6 +8,42 @@
 // 小機緣事件表（每個事件 = 一筆資料）
 // ============================================
 
+// ============================================
+// 工具函式：嘗試觸發替死符
+// ============================================
+function attemptDeathSubstitution(state) {
+    // 1. 優先檢查舊版數值 (Stat)
+    if (state.deathSubstitutes > 0) {
+        state.deathSubstitutes -= 1;
+        addLog(`⚡【替死符啟動】消耗了替死符數值，替你承受了致命一擊！（剩餘數值 ${state.deathSubstitutes}）`, "great-event");
+        setTimeout(() => {
+            alert("⚡【替死符生效】\n檢測到致命傷害，已自動消耗替死符次數為您抵擋死劫！");
+        }, 100);
+        return true;
+    }
+
+    // 2. 檢查背包 (Inventory Item)
+    if (state.inventory && Array.isArray(state.inventory)) {
+        const item = state.inventory.find(i => i.id === "death_substitute");
+        if (item && item.count > 0) {
+            item.count -= 1;
+            if (item.count <= 0) {
+                state.inventory.splice(state.inventory.indexOf(item), 1);
+            }
+            // 重新渲染背包（如果開著）
+            if (typeof renderInventory === "function") renderInventory();
+
+            addLog(`⚡【替死符啟動】消耗了一張替死符，替你承受了致命一擊！`, "great-event");
+            setTimeout(() => {
+                alert("⚡【替死符生效】\n檢測到致命傷害，已自動消耗一張替死符為您抵擋死劫！");
+            }, 100);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 const FortuneEventTable = [
     // ====== 1. 找靈石（正面） ======
     {
@@ -120,6 +156,13 @@ const FortuneEventTable = [
         weight: 0.8,
         type: "bad",
         effect: () => {
+            // 預判是否會致死
+            if (state.lifespan - 1 <= state.age) {
+                if (attemptDeathSubstitution(state)) {
+                    return;
+                }
+            }
+
             state.lifespan -= 1;
             addLog("你險些走火入魔，壽元減少了 1 年。", "bad");
 
@@ -229,6 +272,14 @@ const FortuneEventTable = [
         type: "bad",
         effect: () => {
             const loss = randomInt(5, 20);
+
+            // 預判是否會致死
+            if (state.lifespan - loss <= state.age) {
+                if (attemptDeathSubstitution(state)) {
+                    return;
+                }
+            }
+
             state.lifespan -= loss;
             addLog(`⚠️【壽元燃燒】壽元減少 ${loss} 年。`, "bad");
 
@@ -255,6 +306,17 @@ const FortuneEventTable = [
             const comp = randomInt(1, 2);
             const mind = randomInt(1, 3);
             const life = randomInt(5, 30);
+
+            // 預判是否會致死
+            if (state.lifespan - life <= state.age) {
+                if (attemptDeathSubstitution(state)) {
+                    // 仍扣除屬性，但保命
+                    state.comprehension = Math.max(1, state.comprehension - comp);
+                    state.mindset = Math.max(1, state.mindset - mind);
+                    addLog(`雖保住性命，但悟性仍受損 ${comp} 點，心境受損 ${mind} 點。`, "bad");
+                    return;
+                }
+            }
 
             state.comprehension = Math.max(1, state.comprehension - comp);
             state.mindset = Math.max(1, state.mindset - mind);
@@ -284,12 +346,7 @@ const FortuneEventTable = [
         desc: "無形因果降臨……",
         weight: 0.01,
         effect: () => {
-            if (state.deathSubstitutes > 0) {
-                state.deathSubstitutes -= 1;
-                addLog(
-                    `⚡【替死符啟動】替你承受了致命天譴！（剩餘 ${state.deathSubstitutes} 張）`,
-                    "great-event"
-                );
+            if (attemptDeathSubstitution(state)) {
                 return;
             }
             state.deathReason = "天命難違，遭受天譴";

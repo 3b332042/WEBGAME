@@ -16,20 +16,32 @@ const DebugController = {
     addResource(type, amount) {
         if (!window.state) return;
 
+        // Map short names if necessary, or just use keys directly
         switch (type) {
+            case 'spiritStones':
             case 'stones':
                 window.state.spiritStones = (window.state.spiritStones || 0) + amount;
-                alert(`Added ${amount} Spirit Stones.`);
                 break;
+            case 'factionContrib':
             case 'contrib':
                 window.state.factionContrib = (window.state.factionContrib || 0) + amount;
-                alert(`Added ${amount} Faction Contribution.`);
                 break;
             case 'qi':
                 window.state.qi = (window.state.qi || 0) + amount;
-                alert(`Added ${amount} Qi.`);
+                if (window.state.qi > window.state.qiCap) window.state.qi = window.state.qiCap; // Optional cap
                 break;
+            case 'lifespan':
+                window.state.lifespan = (window.state.lifespan || 0) + amount;
+                break;
+            default:
+                console.warn("Unknown resource type:", type);
+                return;
         }
+
+        // alert(`Added ${amount} to ${type}`); // Remove alert for smoother usage?
+        // Add log instead
+        if (window.addLog) window.addLog(`[DEBUG] Added ${amount} to ${type}`, "event");
+
         if (window.renderUI) window.renderUI();
     },
 
@@ -39,89 +51,37 @@ const DebugController = {
         const value = parseInt(val);
         if (isNaN(value)) return;
 
-        switch (type) {
-            case 'lifespan':
-                window.state.lifespan = value;
-                break;
-            case 'realm':
-                window.state.realmLevel = value;
-                // Update cap
-                if (window.getQiCapForLevel) {
-                    window.state.qiCap = window.getQiCapForLevel(window.state.realmLevel);
-                }
-                break;
-            case 'mindset':
-                window.state.mindset = value;
-                break;
-            case 'comprehension':
-                window.state.comprehension = value;
-                break;
-        }
-        if (window.renderUI) window.renderUI();
-        alert(`Set ${type} to ${value}`);
-    },
+        if (window.state.hasOwnProperty(type)) {
+            window.state[type] = value;
 
-    // 觸發隨機事件
-    triggerRandomEvent() {
-        if (window.smallFortuneEvent) {
-            window.smallFortuneEvent();
-            alert("Triggered Random Event (Check Logs)");
-        } else {
-            alert("smallFortuneEvent function not found.");
-        }
-    },
-
-    // 觸發特定宗門事件
-    triggerSectEvent() {
-        // Find sect event logic manually or force it
-        if (!window.state.faction || window.state.faction === "none") {
-            alert("Join a faction first!");
-            return;
-        }
-
-        // Mocking the event trigger directly to ensure it happens
-        const ev = {
-            id: "debug_sect_reward",
-            effect: () => {
-                const contrib = 500;
-                window.state.factionContrib = (window.state.factionContrib || 0) + contrib;
-                window.addLog(`[DEBUG] 觸發宗門獎勵，獲得 ${contrib} 貢獻。`, "event");
+            // Special handling for realmLevel to update cap
+            if (type === 'realmLevel' && window.getQiCapForLevel) {
+                window.state.qiCap = window.getQiCapForLevel(value);
             }
-        };
-        ev.effect();
-        if (window.renderUI) window.renderUI();
-        alert("Triggered Debug Sect Event (+500 Contrib)");
-    },
-
-    // 恢復狀態
-    fullHeal() {
-        if (!window.state) return;
-        window.state.hp = window.state.maxHp;
-        window.state.mana = window.state.maxMana;
-        if (window.renderUI) window.renderUI();
-        alert("Full Healed.");
-    },
-
-    // 切換宗門
-    joinFaction(factionId) {
-        if (!window.state) return;
-
-        if (factionId === "none") {
-            window.state.faction = "none";
-            window.state.factionRep = 0;
-            window.state.factionContrib = 0;
-            window.state.factionRank = "無";
-            alert("已退出宗門");
-        } else if (factionId === "qingyun") {
-            window.state.faction = "qingyun";
-            window.state.factionRep = 100;
-            window.state.factionContrib = 100;
-            window.state.factionRank = "外門弟子";
-            alert("已加入青雲宗 (外門弟子)");
         }
 
         if (window.renderUI) window.renderUI();
-    }
+        if (window.addLog) window.addLog(`[DEBUG] Set ${type} to ${value}`, "event");
+    },
+
+    // 時間跳躍
+    addTime(years) {
+        if (typeof window.cultivate === 'function') {
+            window.cultivate(years);
+            if (window.addLog) window.addLog(`[DEBUG] Skipped ${years} years`, "event");
+        }
+    },
+
+    // 立即死亡
+    die() {
+        if (!window.state) return;
+        window.state.hp = 0;
+        window.state.lifespan = 0; // consistent death check
+        if (window.renderUI) window.renderUI();
+        alert("Debug: You died.");
+        // Trigger check logic by calling cultivate(0) or similar if needed, 
+        // but state.hp=0 should trigger on next action.
+    },
 };
 
 window.DebugController = DebugController;

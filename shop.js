@@ -64,6 +64,8 @@ function shopToast(text, level = "info") {
 // DOM 抓取
 // =============================
 
+let currentShopCategory = "全部";
+
 const shopModal = document.getElementById("shop-modal");
 const shopModalBg = document.getElementById("shop-modal-bg");
 const shopCloseBtn = document.getElementById("shop-close-btn");
@@ -124,7 +126,12 @@ function getSortedShopItemDefs() {
 // 渲染商店 UI
 // =============================
 
-function renderShop(selectedCategory = "全部") {
+function renderShop(category) {
+    if (category) {
+        currentShopCategory = category;
+    }
+    const selectedCategory = currentShopCategory;
+
     ensureShopState();
     if (!shopListEl) return;
 
@@ -159,7 +166,7 @@ function renderShop(selectedCategory = "全部") {
     // 創建分類標籤欄
     const tabContainer = document.createElement("div");
     tabContainer.className = "shop-category-tabs";
-    
+
     categoryOrder.forEach(cat => {
         const tab = document.createElement("button");
         tab.className = "shop-category-tab";
@@ -170,7 +177,7 @@ function renderShop(selectedCategory = "全部") {
         tab.onclick = () => renderShop(cat);
         tabContainer.appendChild(tab);
     });
-    
+
     shopListEl.appendChild(tabContainer);
 
     // 過濾物品

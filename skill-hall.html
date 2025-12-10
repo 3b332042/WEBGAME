@@ -208,7 +208,7 @@
 
         <div class="player-info">
             <div>
-                <span class="info-label">當前聲望:</span>
+                <span class="info-label">當前貢獻:</span>
                 <span class="info-value" id="repDisplay">0</span>
             </div>
             <div>
@@ -231,7 +231,7 @@
     <script>
         function render() {
             // 更新頂部信息
-            const rep = window.state.factionRep || 0;
+            const rep = window.state.factionContrib || 0;
             document.getElementById('repDisplay').textContent = rep;
 
             const roots = window.state.rootElements || [];
@@ -327,7 +327,7 @@
                         ${btnText}
                     </button>
                     <div class="cost-text">
-                        ${canDo ? `消耗: ${cost} 聲望` : failReason}
+                        ${canDo ? `消耗: ${cost} 貢獻` : failReason}
                     </div>
                 `;
                 }

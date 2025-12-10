@@ -240,6 +240,40 @@ const UIManager = {
         if (typeof renderFactionUI === "function") {
             renderFactionUI();
         }
+
+        // 11. Mobile Quick Stats
+        const qsRealm = document.getElementById("qs-realm");
+        if (qsRealm && qsRealm.offsetParent !== null) { // only update if visible
+            // Realm
+            qsRealm.textContent = realmName(state.realmLevel);
+            qsRealm.className = this.getRealmColorClass(state.realmLevel);
+
+            // Rate
+            const qsRate = document.getElementById("qs-rate");
+            if (qsRate && typeof calcBreakthroughRate === "function") {
+                const rate = calcBreakthroughRate() * 100;
+                qsRate.textContent = `突破率: ${rate.toFixed(0)}%`;
+            }
+
+            // Bar
+            const qsBarFill = document.getElementById("qs-bar-fill");
+            const qsText = document.getElementById("qs-text");
+            if (qsBarFill && qsText) {
+                const pct = Math.min(100, Math.floor((state.qi / state.qiCap) * 100));
+                qsBarFill.style.width = pct + "%";
+                qsText.textContent = `${state.qi} / ${state.qiCap}`;
+
+                // Full Qi Effect
+                if (state.qi >= state.qiCap) {
+                    qsText.textContent += " (可突破)";
+                    qsText.style.color = "#ffd700";
+                    qsBarFill.style.background = "linear-gradient(90deg, #ffd700, #ffeb3b)";
+                } else {
+                    qsText.style.color = "#fff";
+                    qsBarFill.style.background = "linear-gradient(90deg, #4caf50, #81c784)";
+                }
+            }
+        }
     },
 
     // Helper to set text content safely

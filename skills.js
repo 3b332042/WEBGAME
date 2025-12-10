@@ -188,10 +188,10 @@ function canLearnOrUpgrade(skillId) {
         return { can: false, reason: "已達宗師境界" };
     }
 
-    // 4. 檢查聲望
+    // 4. 檢查貢獻
     const cost = getSkillCost(skillId, currentProf);
-    if ((window.state.factionRep || 0) < cost) {
-        return { can: false, reason: `聲望不足 (需要 ${cost})` };
+    if ((window.state.factionContrib || 0) < cost) {
+        return { can: false, reason: `貢獻不足 (需要 ${cost})` };
     }
 
     return { can: true, cost: cost };
@@ -202,8 +202,8 @@ function learnOrUpgradeSkill(skillId) {
     const check = canLearnOrUpgrade(skillId);
     if (!check.can) return check; // { can: false, reason: ... }
 
-    // 扣除聲望
-    window.state.factionRep -= check.cost;
+    // 扣除貢獻
+    window.state.factionContrib -= check.cost;
 
     // 提升熟練度
     if (!window.state.learnedSkills) {

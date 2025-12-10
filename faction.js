@@ -144,6 +144,17 @@ function renderFactionUI() {
     if (repEl) repEl.textContent = state.factionRep;
     if (rankEl) rankEl.textContent = getFactionRank();
     if (contribEl) contribEl.textContent = getFactionContrib();
+
+    // ⭐ 修改：若沒加入宗門，則隱藏「前往宗門」按鈕
+    const btnEnter = document.getElementById("btn-enter-faction");
+    if (btnEnter) {
+        if (f.id === "none") {
+            btnEnter.style.display = "none";
+        } else {
+            // style.css 預設可能是 inline-block 或 block，這裡恢復顯示即可
+            btnEnter.style.display = "inline-block";
+        }
+    }
 }
 
 // ===== 加入勢力 =====

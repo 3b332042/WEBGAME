@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Tian Ling Gen Simulation</title>
+</head>
+
+<body>
+    <h1>天靈根飛升模拟 (10次)</h1>
+    <div id="results">Running...</div>
+
+    <!-- Load Dependencies -->
+    <script src="state.js"></script>
+    <script src="root.js"></script>
+    <script src="realms.js"></script>
+
+    <!-- We skip main.js and implement custom simulation logic to speed up -->
+    <script>
+        // Mock UI
+        window.renderUI = function () { };
+        window.addLog = function () { };
+        window.updateUI = function () { };
+        window.saveGame = function () { };
+
+        // Simulation Configuration
+        const SIM_COUNT = 10;
+        const TARGET_LEVEL = 54; // Ascension eligible
+
+        // Replicate logic from main.js simplified
+        function simulateOneRun(runId) {
+            // Reset State
+            window.state = {
+                age: 16,
+                lifespan: 100,
+                realmLevel: 1,
+                qi: 0,
+                qiCap: getQiCapForLevel(1),
+
+                // Tian Ling Gen Stats
+                rootCount: 1,
+                rootMultiplier: 6.0, // Hardcoded for performace
+
+                attack: 10,
+                defense: 5,
+                hp: 100,
+                maxHp: 100,
+                mindset: 10,
+                comprehension: 10, // Base
+                luck: 10,
+
+                ascended: false,
+                dead: false,
+                deathReason: ""
+            };
+
+            // Loop
+            while (!state.dead && !state.ascended) {
+                // Check Ascension
+                if (state.realmLevel >= 54) {
+                    // Always attempt at 54 (100% rate)
+                    state.ascended = true;
+                    break;
+                }
+
+                // Decide Action
+                if (state.qi >= state.qiCap) {
+                    // Try Breakthrough?
+                    // Strategy: Just do it. Waiting wastes time.
+                    doBreakthrough();
+                } else {
+                    // Cultivate
+                    doCultivate();
+                }
+            }
+
+            return {
+                id: runId,
+                success: state.ascended,
+                age: state.age,
+                level: state.realmLevel,
+                reason: state.deathReason
+            };
+        }
+
+        function doCultivate() {
+            // 1 Year
+            state.age += 1;
+            if (state.age >= state.lifespan) {
+                state.dead = true;
+                state.deathReason = "壽元耗盡";
+                return;
+            }
+
+            const baseGain = baseQiGainForRealm(state.realmLevel);
+            const techMult = 1.0; // Basic
+            const rootMult = 6.0; // Tian Ling Gen
+            const gain = Math.floor(baseGain * techMult * rootMult) + state.comprehension; // Approx random bonus
+
+            state.qi += gain;
+            if (state.qi > state.qiCap) state.qi = state.qiCap;
+        }
+
+        function doBreakthrough() {
+            // Rate
+            let successRate = getBreakRate(state.realmLevel) || 0;
+            successRate += (state.comprehension * 0.003);
+            successRate += (state.mindset * 0.002);
+            successRate = Math.min(successRate, 0.98); // Max 98 in game except guaranteed?
+            // Actually game logic says min(..., 0.98).
+            // But let's assume raw luck helps.
+
+            // Random
+            if (Math.random() < successRate) {
+                // Success
+                state.realmLevel += 1;
+                state.qi = 0;
+                state.qiCap = getQiCapForLevel(state.realmLevel);
+
+                // Stats
+                state.mindset += 1;
+                const lifeGain = getLifeGainForLevel(state.realmLevel);
+                state.lifespan += lifeGain;
+
+                // Full Heal?
+            } else {
+                // Fail
+                state.qi = 0;
+                state.mindset = Math.max(1, state.mindset - 1);
+                state.lifespan -= 2; // Approx avg loss
+                if (state.lifespan <= state.age) {
+                    state.dead = true;
+                    state.deathReason = "突破反噬而亡";
+                }
+            }
+        }
+
+        // Run Simulation
+        const results = [];
+        for (let i = 1; i <= SIM_COUNT; i++) {
+            results.push(simulateOneRun(i));
+        }
+
+        // Render Results at end of body
+        window.onload = function () {
+            const div = document.getElementById("results");
+            let html = "<h2>Simulation Results</h2><ul>";
+            let successes = 0;
+            results.forEach(r => {
+                const color = r.success ? "green" : "red";
+                html += `<li style="color:${color}">Run ${r.id}: ${r.success ? "Ascended of Old Age? No, Ascended!" : "Died"} (Age: ${r.age}, Level: ${r.level}) - ${r.reason || "Success"}</li>`;
+                if (r.success) successes++;
+            });
+            html += `</ul><h3>Total Success: ${successes} / ${SIM_COUNT}</h3>`;
+            div.innerHTML = html;
+        };
+    </script>
+</body>
+
+</html>

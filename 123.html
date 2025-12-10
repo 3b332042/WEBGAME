@@ -177,7 +177,7 @@
         }
 
         .enemy-cube::before {
-            content: "魔";
+            content: "敵";
             position: absolute;
             inset: 0;
             display: flex;
@@ -262,7 +262,6 @@
         .hp-bar-container {
             position: absolute;
             top: -24px;
-            left: 0;
             width: 100%;
             height: 6px;
             background: rgba(0, 0, 0, 0.6);
@@ -1054,9 +1053,7 @@
 
 <body>
     <div class="battle-shell">
-        <div class="battle-title">✦ 築基期 · 演武試煉 ✦</div>
-        <div class="battle-sub">—— 左側青衣劍修 VS 右側赤焰妖影 ——</div>
-
+        <div class="battle-title">✦ 演武試煉 ✦</div>
         <div class="fight-area">
             <div class="game-floor"></div>
             <div class="array-seal"></div>
@@ -1107,8 +1104,6 @@
             <button class="btn" id="btn-earthUlt" onclick="earthUltimate()">土 · 山河崩裂</button>
             <button class="btn" id="btn-goldUltimate" onclick="goldUltimate()">金 · 萬劍歸宗（三排齊發）</button>
         </div>
-
-        <div class="footer-note">※ 此為特效試演，傷害已接戰鬥公式＋暴擊，數值仍可調整，僅供仙友觀賞五行之勢。</div>
     </div>
 
     <script src="state.js"></script>
@@ -1199,42 +1194,46 @@
         `;
         document.body.appendChild(debugDiv);
 
+        // ⭐ Dynamic Initialization
         let enemyUnit = null;
-        const bossId = localStorage.getItem("battle-boss");
-        const targetId = (bossId && (typeof BOSS_DB !== 'undefined') && BOSS_DB[bossId]) ? bossId : "default_shadow";
+        let battleContext = null;
 
-        if (typeof BOSS_DB !== 'undefined' && BOSS_DB[targetId]) {
-            const bossCfg = BOSS_DB[targetId];
-            enemyUnit = JSON.parse(JSON.stringify(bossCfg));
-            enemyUnit.hp = enemyUnit.maxHp;
-            enemyUnit.id = targetId; // Critical: Ensure ID is present
+        // 1. Try loading dynamic boss data passed from other modules (e.g. Contribution Hall)
+        const dynamicBossData = localStorage.getItem("current-battle-enemy");
+        if (dynamicBossData) {
+            try {
+                enemyUnit = JSON.parse(dynamicBossData);
+                console.log("✅ Loaded dynamic boss data:", enemyUnit);
+                battleContext = localStorage.getItem("battle-return-to"); // e.g. "contribution"
+            } catch (e) {
+                console.error("Failed to parse dynamic boss data", e);
+            }
+        }
 
-            console.log("=== Boss Loaded from BOSS.js ===");
-            console.log("Boss ID:", targetId);
-            console.log("Boss Name:", enemyUnit.name);
-            console.log("Boss Max HP:", enemyUnit.maxHp);
-            console.log("Boss Attack:", enemyUnit.attack);
-            console.log("Boss Defense:", enemyUnit.defense);
-            console.log("Boss Crit Rate:", enemyUnit.critRate);
-            console.log("Boss Element:", enemyUnit.elementAttack);
-            console.log("Full Boss Data:", enemyUnit);
-        } else {
-            console.error("BOSS data missing, using hardcoded fallback.");
-            console.log("BOSS_DB exists?", typeof BOSS_DB !== 'undefined');
-            console.log("Target ID:", targetId);
+        // 2. Fallback to existing logic if no dynamic data
+        if (!enemyUnit) {
+            const bossId = localStorage.getItem("battle-boss");
+            const targetId = (bossId && (typeof BOSS_DB !== 'undefined') && BOSS_DB[bossId]) ? bossId : "default_shadow";
 
-            enemyUnit = {
-                id: "default_shadow",
-                name: "心魔幻象",
-                title: "心魔",
-                color: "#ff4444",
-                maxHp: 100,
-                hp: 100,
-                attack: 10,
-                defense: 0,
-                critRate: 0,
-                critDamage: 0
-            };
+            if (typeof BOSS_DB !== 'undefined' && BOSS_DB[targetId]) {
+                const bossCfg = BOSS_DB[targetId];
+                enemyUnit = JSON.parse(JSON.stringify(bossCfg));
+                enemyUnit.hp = enemyUnit.maxHp;
+                enemyUnit.id = targetId;
+            } else {
+                enemyUnit = {
+                    id: "default_shadow",
+                    name: "心魔幻象",
+                    title: "心魔",
+                    color: "#ff4444",
+                    maxHp: 100,
+                    hp: 100,
+                    attack: 10,
+                    defense: 0,
+                    critRate: 0,
+                    critDamage: 0
+                };
+            }
         }
 
         // ⭐ 使用實際的最大血量
@@ -1305,10 +1304,10 @@
             if (!sub) return;
 
             if (playerHP <= 0) {
-                sub.textContent = "—— 勝負已分：道消魔長 ——";
+                sub.textContent = "—— 勝負已分 : 成功 ——";
                 sub.style.color = "#ff4444";
             } else if (enemyHP <= 0) {
-                sub.textContent = "—— 勝負已分：斬妖除魔 ——";
+                sub.textContent = "—— 勝負已分 : 失敗——";
                 sub.style.color = "#4caf50";
             } else {
                 sub.textContent = isPlayerTurn ? "—— 你的回合 ——" : "—— 敵方回合 ——";
@@ -1341,13 +1340,28 @@
                 return;
             }
 
+            // AI Logic based on Realm
+            const level = enemyUnit.realmLevel || 10;
+            const name = enemyUnit.name || "";
+            // Elders or High Level unlock Supremacy
+            const canUlt = level >= 25 || name.includes("長老");
+
             const rand = Math.random();
-            if (rand < 0.5) {
+
+            if (level <= 14) {
+                // Tier 1 (Qi/Foundation): Slash Only
                 enemySlash();
-            } else if (rand < 0.8) {
-                enemyFireball();
+            } else if (!canUlt) {
+                // Tier 2 (Core/Soul): Slash + Skill (Fireball)
+                // 40% Slash, 60% Skill
+                if (rand < 0.4) enemySlash();
+                else enemyFireball();
             } else {
-                enemyUltimate();
+                // Tier 3 (High Realm or Elder): Full Kit
+                // 20% Slash, 40% Skill, 40% Ultimate
+                if (rand < 0.2) enemySlash();
+                else if (rand < 0.6) enemyFireball();
+                else enemyUltimate();
             }
         }
 
@@ -1428,217 +1442,159 @@
             }
         }
 
-        // ★ 新增：統一「回榮譽堂」函式（iframe / 單獨開檔都支援）
-        function returnToHonorHall() {
-            // ⭐ 重要：返回前先保存狀態，確保進度不丟失
+        // ⭐ Unified Return Logic
+        function returnToGame(isWin) {
             if (typeof GameStateManager !== 'undefined') {
                 GameStateManager.save();
-                console.log("✅ 戰鬥結束，進度已保存");
             }
 
-            const targetPage = "honor-hall.html";
+            // Save result for the caller
+            localStorage.setItem("battle-result", JSON.stringify({
+                win: isWin,
+                bossId: enemyUnit.id,
+                timestamp: Date.now()
+            }));
 
-            // 情況一：在主頁 iframe 裡
+            // Clear temporary battle data
+            localStorage.removeItem("current-battle-enemy");
+            // localStorage.removeItem("battle-return-to"); // 保留給接收方處理
+
+            // Handle Contexts
+            if (battleContext === "contribution") {
+                // Return to Faction Hall
+                if (window.parent && window.parent.document) {
+                    // If inside iframe, change iframe src
+                    const frame = window.parent.document.getElementById("faction-frame");
+                    if (frame) {
+                        frame.src = "faction.html";
+                        return;
+                    }
+                }
+                // Fallback for direct access or no iframe
+                window.location.href = "faction.html";
+                return;
+            }
+
+            // Default fallback: Honor Hall
+            returnToHonorHall();
+        }
+
+        // Legacy wrapper (now smart router)
+        function returnToHonorHall() {
             if (window.parent && window.parent.document) {
                 const frame = window.parent.document.getElementById("faction-frame");
                 if (frame) {
-                    console.log("✅ [Navigation] Returning via Iframe (Index Open)");
-                    frame.src = targetPage;
+                    frame.src = "honor-hall.html";
                     return;
                 }
             }
-            // 情況二：單獨開檔
-            console.warn("⚠️ [Navigation] Returning via Direct Location (Index might close if not in iframe)");
-            window.location.href = targetPage;
+            window.location.href = "honor-hall.html";
         }
 
         function handleVictory() {
             updateTurnUI();
+            console.log("=== Battle Victory ===");
+            console.log("Player won against:", enemyUnit.name);
 
+            // 1. Check Promotion Logic
             const bossId = enemyUnit.id;
-            console.log("=== Victory Debug ===");
-            console.log("Boss ID:", bossId);
-            console.log("Enemy Unit:", enemyUnit);
-
-            if (!bossId) {
-                setTimeout(() => {
-                    alert(`【戰鬥勝利】\n\n戰勝 ${enemyUnit.name}！`);
-                    returnToHonorHall();
-                }, 500);
-                return;
-            }
-
             const promotionMap = {
-                "npc_inner": 1,  // 內門弟子 (Rank 1)
-                "npc_core": 2,   // 真傳弟子 (Rank 2)
-                "npc_elder": 3,  // 執事長老 (Rank 3)
-                "npc_guard": 3,  // 護法 (同屬 Rank 3)
-                "npc_master": 4  // 太上長老 (Rank 4)
+                "npc_inner": 1,
+                "npc_core": 2,
+                "npc_elder": 3,
+                "npc_guard": 3,
+                "npc_master": 4
             };
-
             const targetRank = promotionMap[bossId];
-            console.log("Target Rank:", targetRank);
-            console.log("Promotion Map has this boss?", bossId in promotionMap);
 
-            if (targetRank !== undefined) {
-                // 確保載入最新狀態
-                if (typeof GameStateManager !== 'undefined') {
-                    GameStateManager.load();
-                    console.log("GameStateManager loaded");
-                }
+            if (targetRank !== undefined && window.state) {
+                const currentRank = window.state.factionRank || 0;
+                if (currentRank < targetRank) {
+                    console.log("Promoting to Rank", targetRank);
+                    window.state.factionRank = targetRank;
 
-                if (window.state) {
-                    const currentRank = window.state.factionRank || 0;
-                    console.log("Current Rank:", currentRank);
-                    console.log("Current gameState:", window);
-
-                    if (currentRank < targetRank) {
-                        console.log("Promoting from", currentRank, "to", targetRank);
-                        window.state.factionRank = targetRank;
-
-                        // 確保保存並同步
-                        if (typeof GameStateManager !== 'undefined') {
-                            const saved = GameStateManager.save();
-                            console.log("Save result:", saved);
-                            GameStateManager.sync();
-                            console.log("State synced");
-
-                            // 驗證保存
-                            const verification = localStorage.getItem("xiuxian-save");
-                            if (verification) {
-                                const parsed = JSON.parse(verification);
-                                console.log("Verified factionRank in localStorage:", parsed.factionRank);
-                            }
-                        }
-
-                        setTimeout(() => {
-                            alert(`【恭喜晉升】\n\n戰勝 ${enemyUnit.name}！\n職位提升至：${enemyUnit.title} (Rank ${targetRank})`);
-                            returnToHonorHall();
-                        }, 500);
-                    } else {
-                        console.log("Already at or above target rank");
-                        setTimeout(() => {
-                            alert(`【挑戰成功】\n\n戰勝 ${enemyUnit.name}！\n(您已是 Rank ${currentRank}，無需晉升)`);
-                            returnToHonorHall();
-                        }, 500);
-                    }
-                } else {
-                    console.error("gameState missing!");
-                    setTimeout(() => {
-                        alert("錯誤：讀取不到角色存檔，無法晉升。");
-                        returnToHonorHall();
-                    }, 500);
-                }
-            } else {
-                console.log("Boss not in promotion map, no promotion");
-                setTimeout(() => {
-                    alert(`【戰鬥勝利】\n\n戰勝 ${enemyUnit.name}！\n(此為試煉對手，無職位晉升獎勵)`);
-                    returnToHonorHall();
-                }, 500);
-            }
-
-            // 戰鬥勝利，提升熟練度
-            if (window.state && window.state.learnedSkills) {
-                let gained = [];
-                for (let sid in window.state.learnedSkills) {
-                    // 簡單處理：只要贏了，所有已學技能即微微提升 (或者只提升特定屬性?)
-                    // 需求說 "戰鬥後增加 proficiency"，這裡給每場戰鬥 +1
-                    const limit = 100;
-                    if (window.state.learnedSkills[sid] < limit) {
-                        window.state.learnedSkills[sid] += 1;
-                        gained.push(window.SKILLS[sid]?.name || sid);
-                    }
-                }
-                if (gained.length > 0) {
-                    console.log("Skills improved:", gained);
-                    // 觸發保存
                     if (typeof GameStateManager !== 'undefined') {
                         GameStateManager.save();
                         GameStateManager.sync();
                     }
+
+                    setTimeout(() => {
+                        alert(`【恭喜晉升】\n\n戰勝 ${enemyUnit.name}！\n職位提升至：${enemyUnit.title} (Rank ${targetRank})`);
+                        returnToGame(true);
+                    }, 500);
+                    return;
+                }
+            }
+
+            // 2. Normal Victory (Contribution Hall or other)
+            setTimeout(() => {
+                const isPromo = false;
+                alert(`【戰鬥勝利】\n\n戰勝 ${enemyUnit.name}！\n正在返回...`);
+                returnToGame(true);
+            }, 500);
+
+            // 3. Skill Proficiency Logic
+            if (window.state && window.state.learnedSkills) {
+                let gained = [];
+                for (let sid in window.state.learnedSkills) {
+                    const limit = 100;
+                    if (window.state.learnedSkills[sid] < limit) {
+                        window.state.learnedSkills[sid] += 1;
+                        gained.push(window.SKILLS && window.SKILLS[sid] ? window.SKILLS[sid].name : sid);
+                    }
+                }
+                if (gained.length > 0 && typeof GameStateManager !== 'undefined') {
+                    GameStateManager.save();
                 }
             }
         }
 
         function handleDefeat() {
             updateTurnUI();
-
             console.log("=== Battle Defeat ===");
-            console.log("Player defeated by:", enemyUnit.name);
 
             setTimeout(() => {
                 alert(`【挑戰失敗】\n\n你不敵 ${enemyUnit.name}，回宗門靜養一段時日。`);
-                returnToHonorHall();
+                returnToGame(false);
             }, 500);
         }
 
         // ===== 傷害計算函數 =====
-
-        // 計算技能傷害（使用 battle.js 的公式）
         function getSkillDamage(multiplier = 1.0, element = null, skillId = null) {
-
-            // 計算熟練度加成
             let bonus = 0;
             if (skillId && window.state && window.state.learnedSkills) {
                 const prof = window.state.learnedSkills[skillId] || 0;
-                // 使用 skills.js 提供的 helper (如果已載入)
                 if (window.getProficiencyBonus) {
                     bonus = window.getProficiencyBonus(prof);
                 }
             }
-
-            // 總倍率 = 基礎倍率 * (1 + 熟練度加成)
             const finalMult = multiplier * (1 + bonus);
 
             if (typeof performAttack === 'function') {
-                // 暫時覆蓋元素屬性（如果指定）
                 let originalElem = playerUnit.elementAttack;
-                if (element) {
-                    playerUnit.elementAttack = element;
-                }
-
-                // 使用 battle.js 的完整計算
+                if (element) playerUnit.elementAttack = element;
                 const resultRaw = performAttack(playerUnit, enemyUnit);
-
-                // 還原元素屬性
-                if (element) {
-                    playerUnit.elementAttack = originalElem;
-                }
-
+                if (element) playerUnit.elementAttack = originalElem;
                 const dmg = Math.floor(resultRaw.damage * finalMult);
                 return { dmg: Math.max(1, dmg), isCrit: resultRaw.isCrit };
             } else {
-                // 備用簡單計算
                 const baseAtk = playerUnit.attack || 10;
                 const enemyDef = enemyUnit.defense || 0;
                 const defMult = 1 - (enemyDef / (enemyDef + 100));
                 const baseDmg = Math.floor(baseAtk * defMult * finalMult);
-
-                // 暴擊判定
                 const critRate = playerUnit.critRate || 0.05;
                 const isCrit = Math.random() < critRate;
                 const dmg = isCrit ? Math.floor(baseDmg * (1 + (playerUnit.critDamage || 0.5))) : baseDmg;
-
                 return { dmg: Math.max(1, dmg), isCrit };
             }
         }
 
-        // 檢查技能是否已學習
         function checkLearned(skillId) {
-            if (!window.state) return true; // Fallback for pure UI test
+            if (!window.state) return true;
             const loaded = window.state.learnedSkills || {};
             if (!loaded.hasOwnProperty(skillId)) {
-                // 顯示提示
                 const msg = document.createElement('div');
-                msg.style.position = 'absolute';
-                msg.style.top = '40%';
-                msg.style.left = '50%';
-                msg.style.transform = 'translate(-50%, -50%)';
-                msg.style.background = 'rgba(0,0,0,0.8)';
-                msg.style.color = '#fff';
-                msg.style.padding = '10px 20px';
-                msg.style.borderRadius = '4px';
-                msg.style.zIndex = '9999';
+                msg.style.cssText = 'position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:#fff;padding:10px 20px;border-radius:4px;z-index:9999';
                 msg.textContent = "尚未學習此功法！請前往功法閣學習。";
                 document.body.appendChild(msg);
                 setTimeout(() => msg.remove(), 1500);
@@ -1647,10 +1603,9 @@
             return true;
         }
 
-        // 檢查並消耗靈氣
         function checkMana(skillId) {
             const skill = window.SKILLS ? window.SKILLS[skillId] : null;
-            if (!skill) return true; // Fallback if SKILLS not loaded
+            if (!skill) return true;
 
             const cost = skill.manaCost || 0;
             if (playerMana < cost) {

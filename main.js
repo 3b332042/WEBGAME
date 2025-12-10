@@ -53,6 +53,11 @@ function cultivate(years = 1) {
         state.age += 1;
 
         if (GameStateManager.isDead()) {
+            if (state.deathReason) {
+                // If death reason is already set (e.g. by event), don't overwrite it.
+                // Event likely already scheduled victory screen, but let's break safely.
+                break;
+            }
             state.deathReason = "壽元耗盡，自然坐化";
             addLog("你壽元已盡，靜坐中悄然坐化。", "event");
             setTimeout(() => {
@@ -72,11 +77,20 @@ function cultivate(years = 1) {
         if (GameStateManager.randomChance(0.1 + state.luck * 0.01)) {
             if (typeof smallFortuneEvent === "function") {
                 smallFortuneEvent();
+                // If event caused death, stop cultivating
+                if (GameStateManager.isDead()) {
+                    break;
+                }
             }
         }
     }
 
     addLog(`你閉關修煉了 ${years} 年，真氣累積到 ${state.qi}/${state.qiCap}。`, "qi");
+
+    if (typeof showToast === "function" && window.innerWidth <= 768) {
+        const totalGain = state.qi - (state.qi - years * 10); // 這裡很難算精確 gain，暫時顯示最終真氣
+        showToast(`修煉結束，真氣 ${state.qi}/${state.qiCap}`);
+    }
     renderUI();
 }
 
@@ -136,14 +150,14 @@ function breakthrough() {
         const lifeGain = getLifeGainForLevel(state.realmLevel);
         state.lifespan += lifeGain;
 
-        const baseAttack = 1;
-        const baseDefense = 1;
-        const baseHp = 10;
-        const realmBonus = 1 + Math.floor(state.realmLevel / 5) * 0.5;
-
-        const attackGain = Math.floor(baseAttack * realmBonus);
-        const defenseGain = Math.floor(baseDefense * realmBonus);
-        const hpGain = Math.floor(baseHp * realmBonus);
+        // New Scaling Formula for better late-game scaling
+        // Atk Gain: ~ 3 + Level^1.5
+        // Def Gain: ~ 2 + Level^1.4
+        // HP Gain: ~ 20 + Level^1.8
+        const level = state.realmLevel;
+        const attackGain = Math.floor(2 + Math.pow(level, 1.5));
+        const defenseGain = Math.floor(1 + Math.pow(level, 1.4));
+        const hpGain = Math.floor(10 + Math.pow(level, 1.8));
 
         state.attack += attackGain;
         state.defense += defenseGain;
@@ -154,6 +168,9 @@ function breakthrough() {
             `你成功突破至「${realmName(state.realmLevel)}」，消耗一輪真氣，壽元延長了 ${lifeGain} 年！（成功率 ${(successRate * 100).toFixed(1)}%）`,
             "break-success"
         );
+        if (typeof showToast === "function" && window.innerWidth <= 768) {
+            showToast("✨ 突破成功！ ✨", "success");
+        }
         addLog(
             `境界提升帶來的好處：攻擊力 +${attackGain}、防禦力 +${defenseGain}、最大血量 +${hpGain}`,
             "great-event"
@@ -181,6 +198,9 @@ function breakthrough() {
             `突破失敗！真氣反噬，你受了內傷，心境受損，壽元折損 ${lose} 年。（本次成功率 ${(successRate * 100).toFixed(1)}%）`,
             "break-fail"
         );
+        if (typeof showToast === "function" && window.innerWidth <= 768) {
+            showToast("💔 突破失敗...", "fail");
+        }
 
         // 檢查是否因反噬致死
         if (GameStateManager.isDead()) {
@@ -914,3 +934,99 @@ tabBtns.forEach(btn => {
         renderArtsUI();
     };
 });
+
+// =============================
+// 手機版分頁切換邏輯
+// =============================
+function initMobileTabs() {
+    const navBtns = document.querySelectorAll(".nav-btn");
+    const panels = [
+        document.getElementById("left-panel"),
+        document.getElementById("center-panel"),
+        document.getElementById("right-panel")
+    ];
+
+    if (!navBtns.length) return;
+
+    function switchTab(targetId) {
+        // 1. 更新按鈕狀態
+        navBtns.forEach(btn => {
+            if (btn.getAttribute("data-target") === targetId) {
+                btn.classList.add("active");
+            } else {
+                btn.classList.remove("active");
+            }
+        });
+
+        // 2. 更新面板顯示
+        panels.forEach(panel => {
+            if (!panel) return;
+            if (panel.id === targetId) {
+                panel.classList.add("mobile-panel-active");
+            } else {
+                panel.classList.remove("mobile-panel-active");
+            }
+        });
+    }
+
+    // 綁定點擊事件
+    navBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const target = btn.getAttribute("data-target");
+            switchTab(target);
+        });
+    });
+
+    // 初始化：如果是在手機寬度，預設顯示中間（修煉）
+    if (window.innerWidth <= 768) {
+        switchTab("center-panel");
+    }
+
+    // 監聽視窗變動，自動適配
+    window.addEventListener("resize", () => {
+        if (window.innerWidth <= 768) {
+            // 如果當前沒有 active 的面板，補一個預設
+            const hasActive = panels.some(p => p && p.classList.contains("mobile-panel-active"));
+            if (!hasActive) {
+                switchTab("center-panel");
+            }
+        } else {
+            // 桌面版：移除所有 active class，讓 CSS 恢復原狀
+            panels.forEach(p => p && p.classList.remove("mobile-panel-active"));
+        }
+    });
+}
+
+// 在 DOMContentLoaded 或 window.onload 呼叫
+window.addEventListener("DOMContentLoaded", initMobileTabs);
+
+
+// =============================
+// 移動端漂浮提示 (Toasts)
+// =============================
+function showToast(message, type = "normal") {
+    // 防止過多 toast 堆疊
+    const existingToasts = document.querySelectorAll(".toast-message");
+    if (existingToasts.length > 2) {
+        existingToasts[0].remove();
+    }
+
+    const toast = document.createElement("div");
+    toast.className = "toast-message " + (type === "success" ? "toast-success" : type === "fail" ? "toast-fail" : "");
+    toast.textContent = message;
+
+    document.body.appendChild(toast);
+
+    // 動畫進場
+    requestAnimationFrame(() => {
+        toast.classList.add("show");
+    });
+
+    // 自動消失
+    setTimeout(() => {
+        toast.classList.remove("show");
+        setTimeout(() => toast.remove(), 500);
+    }, 2000); // 顯示 2 秒
+}
+window.showToast = showToast;
+
