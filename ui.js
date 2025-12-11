@@ -216,6 +216,7 @@ const UIManager = {
         // 9. Battle Stats
         this.setAttr("s-atk", state.attack);
         this.setAttr("s-def", state.defense);
+        this.setAttr("s-speed", state.speed);
 
         const critRateEl = document.getElementById("s-crit-rate");
         if (critRateEl) critRateEl.textContent = (state.critRate * 100).toFixed(1) + "%";
@@ -240,6 +241,9 @@ const UIManager = {
         if (typeof renderFactionUI === "function") {
             renderFactionUI();
         }
+
+        // 10.5 Equipment UI
+        this.updateEquipmentUI();
 
         // 11. Mobile Quick Stats
         const qsRealm = document.getElementById("qs-realm");
@@ -276,10 +280,42 @@ const UIManager = {
         }
     },
 
+
     // Helper to set text content safely
     setText(id, value) {
         const el = document.getElementById(id);
         if (el) el.textContent = value;
+    },
+
+    // ===== 裝備 UI 更新 =====
+    updateEquipmentUI() {
+        if (!state.equipment) return;
+        const slots = ["head", "body", "legs", "feet", "weapon", "formation"];
+
+        slots.forEach(slot => {
+            const el = document.getElementById(`eq-${slot}`);
+            if (!el) return;
+
+            const itemId = state.equipment[slot];
+            const slotDiv = el.closest(".equipment-slot");
+
+            if (itemId) {
+                const def = window.getItemDef ? window.getItemDef(itemId) : null;
+                const name = def ? def.name : itemId;
+                el.textContent = name;
+
+                // Rarity Color
+                const rarityClass = (def && window.getRarityClass) ? window.getRarityClass(def.rarity) : "";
+                el.className = "slot-name " + rarityClass;
+
+                // Add styling class
+                if (slotDiv) slotDiv.classList.add("equipped");
+            } else {
+                el.textContent = "未裝備";
+                el.className = "slot-name"; // reset
+                if (slotDiv) slotDiv.classList.remove("equipped");
+            }
+        });
     },
 
     // Helper to set attribute value + color class

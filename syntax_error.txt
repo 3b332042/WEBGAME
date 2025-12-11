@@ -1,0 +1,12 @@
+C:\Users\a9804\Desktop\VSCODE\webgame\items.js:2965
+    };
+     ^
+
+SyntaxError: Unexpected token ';'
+    at internalCompileFunction (node:internal/vm:77:18)
+    at wrapSafe (node:internal/modules/cjs/loader:1288:20)
+    at node:internal/main/check_syntax:81:41
+    at loadESM (node:internal/process/esm_loader:28:13)
+    at checkSyntax (node:internal/main/check_syntax:81:21)
+
+Node.js v20.11.0

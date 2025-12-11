@@ -1289,8 +1289,35 @@
         updateMana();
 
 
+        // ===== 速度與行動回合機制 =====
         let isPlayerTurn = true;
         let isEnemyFrozen = false;
+
+        let playerSpeed = (playerUnit.speed || 10);
+        let enemySpeed = (enemyUnit.speed || (enemyUnit.realmLevel ? enemyUnit.realmLevel * 2 + 10 : 10));
+
+        // 確保初始速度大於 0
+        if (playerSpeed < 1) playerSpeed = 1;
+        if (enemySpeed < 1) enemySpeed = 1;
+
+        let playerMaxActs = Math.floor(playerSpeed / enemySpeed);
+        if (playerMaxActs < 1) playerMaxActs = 1;
+
+        let enemyMaxActs = Math.floor(enemySpeed / playerSpeed);
+        if (enemyMaxActs < 1) enemyMaxActs = 1;
+
+        let currentActsLeft = 0;
+
+        // 初始化回合優先權
+        if (playerSpeed >= enemySpeed) {
+            isPlayerTurn = true;
+            currentActsLeft = playerMaxActs;
+        } else {
+            isPlayerTurn = false;
+            currentActsLeft = enemyMaxActs;
+            // 敵方先攻，延遲觸發
+            setTimeout(enemyTurn, 1000);
+        }
 
         function updateTurnUI() {
             const btns = document.querySelectorAll(".btn");
@@ -1310,16 +1337,38 @@
                 sub.textContent = "—— 勝負已分 : 失敗——";
                 sub.style.color = "#4caf50";
             } else {
-                sub.textContent = isPlayerTurn ? "—— 你的回合 ——" : "—— 敵方回合 ——";
-                sub.style.color = isPlayerTurn ? "#a49378" : "#ff5555";
+                let actionText = `(剩餘行動: ${currentActsLeft})`;
+                if (isPlayerTurn) {
+                    sub.textContent = `—— 你的回合 ${actionText} ——`;
+                    sub.style.color = "#a49378";
+                } else {
+                    sub.textContent = `—— 敵方回合 ${actionText} ——`;
+                    sub.style.color = "#ff5555";
+                }
             }
         }
 
         function endPlayerTurn() {
             if (enemyHP <= 0) return;
-            isPlayerTurn = false;
-            updateTurnUI();
-            setTimeout(enemyTurn, 1000);
+
+            // 扣除行動次數
+            currentActsLeft--;
+
+            if (currentActsLeft > 0) {
+                // 還有行動次數，繼續玩家回合
+                updateTurnUI();
+                const msg = document.createElement('div');
+                msg.style.cssText = 'position:absolute;top:30%;left:20%;transform:translate(-50%,-50%);color:#aaffaa;font-weight:bold;font-size:18px;text-shadow:0 0 5px #000;z-index:999;animation:floatUp 0.8s forwards;';
+                msg.textContent = "速度壓制！額外行動！";
+                document.body.appendChild(msg);
+                setTimeout(() => msg.remove(), 800);
+            } else {
+                // 行動結束，換對手
+                isPlayerTurn = false;
+                currentActsLeft = enemyMaxActs; // 重置敵方行動次數
+                updateTurnUI();
+                setTimeout(enemyTurn, 1000);
+            }
         }
 
         function enemyTurn() {
@@ -1334,9 +1383,8 @@
                     dmgText.style.color = "#00e5ff";
                 }
                 isEnemyFrozen = false;
-                setTimeout(() => {
-                    endEnemyTurn();
-                }, 1000);
+                // 凍結消耗掉一次行動，但這裡直接結束該次行動
+                endEnemyTurn();
                 return;
             }
 
@@ -1368,13 +1416,30 @@
         function endEnemyTurn() {
             if (playerHP <= 0) return;
 
-            // 回合結束時恢復靈氣（20% 最大靈氣）
-            const manaRegen = Math.floor(playerMaxMana * 0.2);
-            playerMana = Math.min(playerMana + manaRegen, playerMaxMana);
-            updateMana();
+            currentActsLeft--;
 
-            isPlayerTurn = true;
-            updateTurnUI();
+            if (currentActsLeft > 0) {
+                // 敵方還有行動次數，繼續攻擊
+                updateTurnUI();
+
+                const msg = document.createElement('div');
+                msg.style.cssText = 'position:absolute;top:30%;right:20%;transform:translate(50%,-50%);color:#ffaaaa;font-weight:bold;font-size:18px;text-shadow:0 0 5px #000;z-index:999;animation:floatUp 0.8s forwards;';
+                msg.textContent = "敵方速度壓制！連續攻擊！";
+                document.body.appendChild(msg);
+                setTimeout(() => msg.remove(), 800);
+
+                setTimeout(enemyTurn, 1200); // 稍作延遲再攻擊
+            } else {
+                // 敵方行動結束，換玩家
+                // 回合結束時恢復靈氣（20% 最大靈氣）
+                const manaRegen = Math.floor(playerMaxMana * 0.2);
+                playerMana = Math.min(playerMana + manaRegen, playerMaxMana);
+                updateMana();
+
+                isPlayerTurn = true;
+                currentActsLeft = playerMaxActs; // 重置玩家行動次數
+                updateTurnUI();
+            }
         }
 
         // updateHP 函數已在前面定義（使用實際血量），這裡不需要重複
@@ -1466,7 +1531,7 @@
                     // If inside iframe, change iframe src
                     const frame = window.parent.document.getElementById("faction-frame");
                     if (frame) {
-                        frame.src = "faction.html";
+                        frame.src = "faction.html?t=" + Date.now();
                         return;
                     }
                 }

@@ -1308,6 +1308,15 @@
     function openContribHall() {
         const modal = document.getElementById('contrib-modal');
         if (modal) modal.style.display = 'flex';
+
+        // 強制切換到懸賞分頁
+        switchContribTab('bounty');
+
+        if (!window.ContributionHall) {
+            console.error("ContributionHall module missing!");
+            alert("系統錯誤：懸賞模組未載入，請刷新頁面重試。");
+            return;
+        }
         renderBountyList();
     }
 
@@ -1393,11 +1402,21 @@
                                 const boss = window.ContributionHall.bosses.find(b => b.id === bossId);
                                 if (boss) {
                                     const pWin = window.parent || window;
+
+                                    // CRITICAL FIX: Sync state from storage first!
+                                    // 123.html might have saved new HP/Mana state. 
+                                    // If we don't load, our save() will be rejected due to timestamp conflict.
+                                    if (pWin.GameStateManager) {
+                                        pWin.GameStateManager.load();
+                                    }
+
                                     const state = pWin.gameState || pWin.state || window.state;
 
                                     if (state) {
                                         // Initialize completed list logic
                                         if (!state.completedChallenges) state.completedChallenges = [];
+
+                                        console.log(`[Faction] Processing battle return. BossID: ${bossId}, Completed: ${state.completedChallenges}`);
 
                                         // Check if already completed
                                         if (state.completedChallenges.includes(bossId)) {
@@ -1414,15 +1433,17 @@
                                             }, 100);
 
                                             // Awards
-                                            if (window.addFactionContrib) {
-                                                window.addFactionContrib(boss.rewardContrib);
-                                            } else if (window.parent && window.parent.addFactionContrib) {
-                                                window.parent.addFactionContrib(boss.rewardContrib);
-                                            }
+                                            // Awards - Explicitly update state to avoid cross-window function issues or 'no faction' checks
+                                            state.factionContrib = (state.factionContrib || 0) + boss.rewardContrib;
 
                                             // Add stones & Rep (Try accessing parent state)
                                             state.spiritStones = (state.spiritStones || 0) + boss.rewardStones; // fixed prop name
                                             state.factionRep = (state.factionRep || 0) + (boss.rewardRep || 0);
+
+                                            // Log it
+                                            if (pWin.addLog) {
+                                                pWin.addLog(`完成懸賞【${boss.name}】：靈石+${boss.rewardStones}, 貢獻+${boss.rewardContrib}, 聲望+${boss.rewardRep}`, "event");
+                                            }
 
                                             // Update UI if available
                                             if (pWin.updateResourceUI) pWin.updateResourceUI();

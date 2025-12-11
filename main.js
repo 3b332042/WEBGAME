@@ -667,6 +667,33 @@ if (victoryCloseBtn) {
     });
 }
 
+// ===== 遊戲說明彈窗 =====
+const btnHelp = document.getElementById("btn-help");
+const helpModal = document.getElementById("help-modal");
+const helpModalBg = document.getElementById("help-modal-bg");
+const helpCloseBtn = document.getElementById("help-close-btn");
+
+if (btnHelp) {
+    btnHelp.addEventListener("click", () => {
+        if (helpModal) helpModal.style.display = "block";
+        if (helpModalBg) helpModalBg.style.display = "block";
+    });
+}
+
+if (helpCloseBtn) {
+    helpCloseBtn.addEventListener("click", () => {
+        if (helpModal) helpModal.style.display = "none";
+        if (helpModalBg) helpModalBg.style.display = "none";
+    });
+}
+
+if (helpModalBg) {
+    helpModalBg.addEventListener("click", () => {
+        if (helpModal) helpModal.style.display = "none";
+        if (helpModalBg) helpModalBg.style.display = "none";
+    });
+}
+
 // ===== 初始化：進遊戲先格式化 state → 選難度 → 抽屬性 =====
 (function initGame() {
     try {
@@ -729,211 +756,384 @@ function getGradeRarity(level) {
     return "orange";
 }
 
+
 function renderArtsUI() {
     if (!window.state || !window.state.arts) return;
-    if (!window.ArtsSystem) return;
 
-    const arts = window.state.arts;
+    // 1. Ensure Layout Structure exists
+    const modalContent = document.querySelector("#arts-modal .modal-content");
+    if (!modalContent) return;
 
-    // Special handling for Smelting tab
+    // Check if layout is already initialized
+    let container = document.getElementById("arts-container");
+    if (!container) {
+        modalContent.innerHTML = `
+            <div id="arts-container">
+                <div id="arts-sidebar">
+                    <div id="arts-nav-list" style="flex:1; overflow-y:auto;">
+                        <!-- Nav Buttons -->
+                    </div>
+                    <div class="arts-status-area">
+                        <div class="arts-lvl-label">當前境界</div>
+                        <div class="arts-lvl-val" id="arts-status-lvl">--</div>
+                        <div class="arts-exp-bar">
+                            <div class="arts-exp-fill" id="arts-status-exp-fill"></div>
+                        </div>
+                        <div style="font-size:11px; color:#666; margin-top:4px; text-align:right;" id="arts-status-exp-text">0/0</div>
+                    </div>
+                </div>
+                <div id="arts-content-view">
+                    <div id="arts-grid-list"></div>
+                </div>
+            </div>
+        `;
+        container = document.getElementById("arts-container");
+    }
+
+    // 2. Render Sidebar Tabs
+    const tabs = [
+        { id: "alchemy", label: "煉丹" },
+        { id: "weapon", label: "煉器" },
+        { id: "formation", label: "陣法" },
+        { id: "talisman", label: "符籙" },
+        { id: "smelting", label: "熔煉" }
+    ];
+
+    const navList = document.getElementById("arts-nav-list");
+    if (navList) {
+        navList.innerHTML = "";
+        tabs.forEach(tab => {
+            const btn = document.createElement("button");
+            btn.className = `arts-nav-btn ${currentArtTab === tab.id ? "active" : ""}`;
+            btn.innerHTML = `<span style="font-size:18px;">•</span> <span>${tab.label}</span>`;
+            btn.onclick = () => {
+                currentArtTab = tab.id;
+                renderArtsUI();
+            };
+            navList.appendChild(btn);
+        });
+    }
+
+    // 3. Render Status (Sidebar Bottom)
+    const artData = window.state.arts[currentArtTab];
+    const lvlDisplay = document.getElementById("arts-status-lvl");
+    const expFill = document.getElementById("arts-status-exp-fill");
+    const expText = document.getElementById("arts-status-exp-text");
+    const statusArea = document.querySelector(".arts-status-area");
+
     if (currentArtTab === "smelting") {
-        if (window.SmeltingSystem && typeof window.SmeltingSystem.renderInto === "function") {
-            const listEl = document.getElementById("arts-recipe-list");
-            if (listEl) window.SmeltingSystem.renderInto(listEl);
+        if (statusArea) statusArea.style.display = "none";
+    } else {
+        if (statusArea) statusArea.style.display = "block";
+        if (artData && lvlDisplay) {
+            const lvl = artData.level || 0;
+            lvlDisplay.textContent = lvl > 0 ? `${lvl} 品` : "未入門";
 
-            // Update Info Panel specific for Smelting is handled by renderInto or we do it here?
-            // renderInto handles it.
-
-            // Hide Level Display stuff if present
-            const lvlEl = document.getElementById("art-level-display");
-            const expEl = document.getElementById("art-exp-display");
-            const bar = document.getElementById("art-exp-bar-container");
-            if (lvlEl) lvlEl.innerHTML = "";
-            if (expEl) expEl.style.display = "none";
-            if (bar) bar.style.display = "none";
-        }
-        return;
-    }
-
-    const artData = arts[currentArtTab];
-
-    // 更新等級顯示 & 進度條
-    const lvlEl = document.getElementById("art-level-display");
-    const expEl = document.getElementById("art-exp-display");
-
-    if (lvlEl && expEl) {
-        // 清空舊內容並重建結構
-        const container = expEl.parentElement;
-        // 保持 .arts-info-panel 結構，但我們會動態改變內部顯示
-
-        if (!artData || artData.level === 0) {
-            lvlEl.textContent = "未習得";
-            expEl.innerHTML = `<span style="color:#888;">需使用對應典籍解鎖</span>`;
-            // 如果有進度條容器，隱藏它
-            let bar = document.getElementById("art-exp-bar-container");
-            if (bar) bar.style.display = "none";
-        } else {
-            const gradeRarity = getGradeRarity(artData.level);
-            lvlEl.innerHTML = `<span class="art-level-badge rarity-${gradeRarity}">${artData.level}品</span>`;
-
-            const nextExp = window.ArtsSystem.EXP_PER_LEVEL[artData.level + 1];
-            let pct = 0;
-            let expText = "";
-
+            const nextExp = window.ArtsSystem.EXP_PER_LEVEL[lvl + 1];
             if (!nextExp) {
-                expText = "已達最高境界";
-                pct = 100;
+                if (expFill) expFill.style.width = "100%";
+                if (expText) expText.textContent = "MAX";
             } else {
-                pct = Math.min(100, (artData.exp / nextExp) * 100);
-                expText = `${artData.exp} / ${nextExp}`;
+                const pct = Math.min(100, (artData.exp / nextExp) * 100);
+                if (expFill) expFill.style.width = `${pct}%`;
+                if (expText) expText.textContent = `${artData.exp}/${nextExp}`;
             }
-
-            // 建立或更新進度條 HTML
-            let barContainer = document.getElementById("art-exp-bar-container");
-            if (!barContainer) {
-                barContainer = document.createElement("div");
-                barContainer.id = "art-exp-bar-container";
-                barContainer.className = "art-exp-bar-bg";
-
-                const fill = document.createElement("div");
-                fill.id = "art-exp-bar-fill";
-                fill.className = "art-exp-bar-fill";
-
-                const text = document.createElement("div");
-                text.id = "art-exp-bar-text";
-                text.className = "art-exp-bar-text";
-
-                barContainer.appendChild(fill);
-                barContainer.appendChild(text);
-
-                // Insert after expEl
-                expEl.after(barContainer);
-                // expEl mainly used for label now? hide it or use it for "Exp:" label
-                expEl.style.display = "none";
-            } else {
-                barContainer.style.display = "block";
-            }
-
-            document.getElementById("art-exp-bar-fill").style.width = `${pct}%`;
-            document.getElementById("art-exp-bar-text").textContent = expText;
         }
     }
 
-    // 更新配方列表
-    const listEl = document.getElementById("arts-recipe-list");
-    if (!listEl) return;
-    listEl.innerHTML = "";
+    // 4. Render Main Content
+    const gridList = document.getElementById("arts-grid-list");
+    if (!gridList) return;
 
-    if (!artData || artData.level === 0) {
-        listEl.innerHTML = `<div class="empty-tip">尚未習得此藝，請先研讀典籍。</div>`;
+    // Save current scroll position (optional? maybe confusing if switching tabs)
+    // gridList.innerHTML = ""; // Clear normally
+
+    if (currentArtTab === "smelting") {
+        gridList.innerHTML = "";
+        gridList.style.display = "flex";
+        gridList.style.flexDirection = "column";
+        if (window.SmeltingSystem && typeof window.SmeltingSystem.renderInto === "function") {
+            window.SmeltingSystem.renderInto(gridList);
+        }
         return;
     }
+
+    // Reset Grid Style
+    gridList.style.display = "grid";
+    gridList.innerHTML = "";
 
     const recipes = window.ArtsSystem.Recipes[currentArtTab];
     if (!recipes || recipes.length === 0) {
-        listEl.innerHTML = `<div class="empty-tip">暫無配方可供研習。</div>`;
+        gridList.innerHTML = `<div style="color:#666; padding:40px; text-align:center; grid-column:1/-1;">暫無配方</div>`;
         return;
     }
 
-    recipes.forEach((recipe, index) => {
-        const canCraft = artData.level >= recipe.levelReq;
-        const itemDef = window.getItemDef(recipe.id); // 嘗試獲取成品定義以取得稀有度
-        const rarity = itemDef ? itemDef.rarity : "white";
-        const reqRarity = getGradeRarity(recipe.levelReq);
+    if (!artData || artData.level === 0) {
+        // Show info but maybe lock? Or just show tip?
+        // User wants to see what's available?
+        // Let's show "Learn first".
+        gridList.innerHTML = `
+            <div style="grid-column:1/-1; display:flex; flex-direction:column; align-items:center; justify-content:center; height:300px; color:#888;">
+                <div style="font-size:40px; margin-bottom:20px; opacity:0.3;">🔒</div>
+                <div>尚未習得此藝，請先研讀典籍入门</div>
+                <div style="font-size:12px; margin-top:10px; color:#555;">(您可以在商店購買入門書籍)</div>
+            </div>
+        `;
+        return;
+    }
 
-        let materialsHtml = "";
-        recipe.materials.forEach(mat => {
-            const def = window.getItemDef(mat.id);
-            const name = def ? def.name : mat.id;
+    // Filter and Sort Logic for Display
+    let displayList = recipes.map((r, i) => ({ r, idx: i }));
 
-            const invItem = state.inventory.find(i => i.id === mat.id);
-            const count = invItem ? invItem.count : 0;
-            const hasEnough = count >= mat.count;
-            const matClass = hasEnough ? "mat-enough" : "mat-missing";
+    // User Request: Exclude "comp_tea"
+    displayList = displayList.filter(item => item.r.id !== "comp_tea");
 
-            materialsHtml += `<span class="mat-chip ${matClass}">${name} ${count}/${mat.count}</span>`;
+    // User Request: Sort by Rank (Level Req) Ascending
+    displayList.sort((a, b) => a.r.levelReq - b.r.levelReq);
+
+    // === 煉器專用：分類摺疊 ===
+    if (currentArtTab === "weapon") {
+        // 定義裝備類別
+        const categories = [
+            { id: "weapons", name: "法器 (武器)", keywords: ["sword", "blade", "spear"] },
+            { id: "head", name: "頭部 (頭盔)", keywords: ["hat", "helm", "crown"] },
+            { id: "body", name: "衣服 (護甲)", keywords: ["robe", "armor"] },
+            { id: "legs", name: "褲子 (護腿)", keywords: ["pants", "leg"] },
+            { id: "feet", name: "鞋子 (靴子)", keywords: ["shoes", "boots"] }
+        ];
+
+        // 按類別分組
+        const grouped = {};
+        categories.forEach(cat => grouped[cat.id] = []);
+
+        displayList.forEach(item => {
+            const itemDef = window.getItemDef(item.r.id);
+            if (!itemDef) return;
+
+            // 根據 slot 或 type 分類
+            const slot = itemDef.slot || itemDef.type;
+            if (slot === "weapon") grouped.weapons.push(item);
+            else if (slot === "head") grouped.head.push(item);
+            else if (slot === "body") grouped.body.push(item);
+            else if (slot === "legs") grouped.legs.push(item);
+            else if (slot === "feet") grouped.feet.push(item);
         });
 
-        const div = document.createElement("div");
-        div.className = `arts-item ${canCraft ? '' : 'locked'}`;
+        // 渲染分類摺疊
+        categories.forEach(cat => {
+            const items = grouped[cat.id];
+            if (items.length === 0) return;
 
-        div.innerHTML = `
-            <div class="arts-item-header">
-                <div class="arts-item-title rarity-${rarity}">
-                    ${recipe.name} 
-                    <span class="arts-req-badge rarity-${reqRarity} ${canCraft ? 'ok' : 'no'}">${recipe.levelReq}品</span>
-                </div>
-                <div class="arts-item-mats">
-                    ${materialsHtml}
-                </div>
+            // 創建分類標題
+            const categoryHeader = document.createElement("div");
+            categoryHeader.className = "arts-category-header";
+            categoryHeader.style.cssText = `
+                grid-column: 1/-1;
+                padding: 12px 16px;
+                background: linear-gradient(135deg, rgba(100, 80, 60, 0.3), rgba(80, 60, 40, 0.3));
+                border-left: 4px solid #d4af37;
+                border-radius: 4px;
+                margin: 16px 0 8px 0;
+                cursor: pointer;
+                user-select: none;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                transition: all 0.2s;
+            `;
+            categoryHeader.innerHTML = `
+                <span style="font-weight: bold; color: #ffd700; font-size: 15px;">${cat.name}</span>
+                <span class="collapse-icon" style="color: #d4af37; font-size: 18px;">▼</span>
+            `;
+
+            // 創建分類容器
+            const categoryContainer = document.createElement("div");
+            categoryContainer.className = "arts-category-container";
+            categoryContainer.style.cssText = `
+                grid-column: 1/-1;
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 16px;
+                margin-bottom: 8px;
+            `;
+
+            // 摺疊切換
+            let isCollapsed = false;
+            categoryHeader.onclick = () => {
+                isCollapsed = !isCollapsed;
+                categoryContainer.style.display = isCollapsed ? "none" : "grid";
+                categoryHeader.querySelector(".collapse-icon").textContent = isCollapsed ? "▶" : "▼";
+            };
+
+            gridList.appendChild(categoryHeader);
+
+            // 渲染該類別的配方卡片
+            items.forEach(({ r: recipe, idx }) => {
+                const itemDef = window.getItemDef(recipe.id);
+                const rarity = itemDef ? itemDef.rarity : "white";
+                const desc = itemDef ? itemDef.desc : "暫無描述";
+                const canCraft = artData.level >= recipe.levelReq;
+
+                let matsHtml = "";
+                recipe.materials.forEach(mat => {
+                    const mDef = window.getItemDef(mat.id);
+                    const mName = mDef ? mDef.name : mat.id;
+                    const mRarity = mDef ? mDef.rarity : "white";
+                    const invItem = state.inventory.find(i => i.id === mat.id);
+                    const count = invItem ? invItem.count : 0;
+                    const enough = count >= mat.count;
+
+                    const qtyColor = enough ? "#4caf50" : "#ff5252";
+
+                    matsHtml += `
+                    <div class="mat-req-row">
+                        <span class="rarity-${mRarity}">${mName}</span>
+                        <span style="color:${qtyColor};">${count}/${mat.count}</span>
+                    </div>
+                    `;
+                });
+
+                const card = document.createElement("div");
+                card.className = `arts-card ${canCraft ? '' : 'locked'}`;
+                card.innerHTML = `
+                    <div class="arts-card-header">
+                        <div class="arts-card-title">
+                            <span class="rarity-${rarity}">${recipe.name}</span>
+                        </div>
+                        <div class="arts-req-badge ${canCraft ? 'ok' : ''}">${recipe.levelReq}品</div>
+                    </div>
+                    <div style="font-size:12px; color:#aaa; margin-bottom:8px; line-height:1.4;">
+                        ${desc}
+                    </div>
+                    <div class="arts-card-body">
+                        ${matsHtml}
+                    </div>
+                    <div class="arts-card-footer">
+                        <button class="arts-craft-btn" ${canCraft ? '' : 'disabled'}>
+                            ${canCraft ? "煉製" : "品級不足"}
+                        </button>
+                    </div>
+                `;
+
+                if (canCraft) {
+                    const btn = card.querySelector("button");
+                    btn.onclick = () => {
+                        window.ArtsSystem.craft(currentArtTab, idx);
+                    };
+                }
+
+                categoryContainer.appendChild(card);
+            });
+
+            gridList.appendChild(categoryContainer);
+        });
+
+        return; // 煉器專用邏輯結束
+    }
+
+    // === 其他技藝：原有邏輯 ===
+    displayList.forEach(({ r: recipe, idx }) => {
+        const itemDef = window.getItemDef(recipe.id);
+        const rarity = itemDef ? itemDef.rarity : "white";
+        const desc = itemDef ? itemDef.desc : "暫無描述";
+        const canCraft = artData.level >= recipe.levelReq;
+
+        let matsHtml = "";
+        recipe.materials.forEach(mat => {
+            const mDef = window.getItemDef(mat.id);
+            const mName = mDef ? mDef.name : mat.id;
+            const mRarity = mDef ? mDef.rarity : "white";
+            const invItem = state.inventory.find(i => i.id === mat.id);
+            const count = invItem ? invItem.count : 0;
+            const enough = count >= mat.count;
+
+            const qtyColor = enough ? "#4caf50" : "#ff5252"; // Green : Red
+
+            matsHtml += `
+            <div class="mat-req-row">
+                <span class="rarity-${mRarity}">${mName}</span>
+                <span style="color:${qtyColor};">${count}/${mat.count}</span>
             </div>
-            <div class="arts-item-action">
-                <button class="craft-btn" data-type="${currentArtTab}" data-idx="${index}" ${canCraft ? "" : "disabled"}>
+            `;
+        });
+
+        const card = document.createElement("div");
+        card.className = `arts-card ${canCraft ? '' : 'locked'}`;
+        card.innerHTML = `
+            <div class="arts-card-header">
+                <div class="arts-card-title">
+                    <span class="rarity-${rarity}">${recipe.name}</span>
+                </div>
+                <div class="arts-req-badge ${canCraft ? 'ok' : ''}">${recipe.levelReq}品</div>
+            </div>
+            <div style="font-size:12px; color:#aaa; margin-bottom:8px; line-height:1.4;">
+                ${desc}
+            </div>
+            <div class="arts-card-body">
+                ${matsHtml}
+            </div>
+            <div class="arts-card-footer">
+                <button class="arts-craft-btn" ${canCraft ? '' : 'disabled'}>
                     ${canCraft ? "煉製" : "品級不足"}
                 </button>
             </div>
         `;
-        listEl.appendChild(div);
-    });
 
-    // Bind craft buttons
-    const btns = listEl.querySelectorAll(".craft-btn");
-    btns.forEach(btn => {
-        btn.addEventListener("click", (e) => {
-            const type = e.target.dataset.type;
-            const idx = parseInt(e.target.dataset.idx);
-            window.ArtsSystem.craft(type, idx);
-        });
+        if (canCraft) {
+            const btn = card.querySelector("button");
+            btn.onclick = () => {
+                // Use original index 'idx' for crafting
+                window.ArtsSystem.craft(currentArtTab, idx);
+            };
+        }
+
+        gridList.appendChild(card);
     });
 }
 window.renderArtsUI = renderArtsUI;
 
 
+
 // Bind Events
+
+// Fixed Toggle Function for Arts Modal
+function toggleArtsModal(show) {
+    const modal = document.getElementById("arts-modal");
+    const bg = document.getElementById("arts-modal-bg");
+    if (!modal || !bg) return;
+
+    const isHidden = modal.style.display === "none" || modal.style.display === "";
+    const target = (typeof show === "boolean") ? show : isHidden;
+
+    if (target) {
+        modal.style.display = "flex"; // Critical: Use Flex for the new layout
+        bg.style.display = "block";
+
+        // Ensure state
+        if (typeof currentArtTab === "undefined" || !currentArtTab) window.currentArtTab = "alchemy";
+
+        // Render UI
+        if (window.renderArtsUI) window.renderArtsUI();
+    } else {
+        modal.style.display = "none";
+        bg.style.display = "none";
+    }
+}
+window.toggleArtsModal = toggleArtsModal;
+
+// Bind Events (Using onclick to prevent duplicate listeners)
 const btnArts = document.getElementById("btn-toggle-arts");
 if (btnArts) {
-    btnArts.addEventListener("click", () => toggleArtsModal());
+    btnArts.onclick = () => toggleArtsModal();
 }
 
 const btnArtsClose = document.getElementById("arts-close-btn");
 const bgArts = document.getElementById("arts-modal-bg");
-if (btnArtsClose) btnArtsClose.addEventListener("click", () => toggleArtsModal(false));
-if (bgArts) bgArts.addEventListener("click", () => toggleArtsModal(false));
+if (btnArtsClose) btnArtsClose.onclick = () => toggleArtsModal(false);
+if (bgArts) bgArts.onclick = () => toggleArtsModal(false);
 
-// Ensure Smelting Tab exists (Self-healing for cache issues)
-const tabsContainer = document.querySelector(".arts-tabs");
-if (tabsContainer) {
-    let smeltingBtn = tabsContainer.querySelector('[data-type="smelting"]');
-    if (!smeltingBtn) {
-        smeltingBtn = document.createElement("button");
-        smeltingBtn.className = "arts-tab-btn";
-        smeltingBtn.dataset.type = "smelting";
-        smeltingBtn.style.color = "#ffd700";
-        smeltingBtn.textContent = "熔煉";
-        tabsContainer.appendChild(smeltingBtn);
 
-        // Bind event freshly
-        smeltingBtn.addEventListener("click", (e) => {
-            document.querySelectorAll(".arts-tab-btn").forEach(b => b.classList.remove("active"));
-            e.target.classList.add("active");
-            currentArtTab = "smelting";
-            renderArtsUI();
-        });
-    }
-}
 
-// Re-bind all tabs just in case
-const tabBtns = document.querySelectorAll(".arts-tab-btn");
-tabBtns.forEach(btn => {
-    // Remove old listeners? Hard to do without cloning.
-    // We assume this runs once. If we added dynamic button, valid.
-    btn.onclick = (e) => { // Use onclick override to be safe against multi-bind
-        document.querySelectorAll(".arts-tab-btn").forEach(b => b.classList.remove("active"));
-        e.target.classList.add("active");
-        currentArtTab = e.target.dataset.type;
-        renderArtsUI();
-    };
-});
 
 // =============================
 // 手機版分頁切換邏輯

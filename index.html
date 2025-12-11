@@ -129,10 +129,97 @@
         <button id="victory-close-btn" class="victory-btn">重修此世</button>
     </div>
 
+    <!-- === 遊戲說明彈窗 === -->
+    <div id="help-modal-bg" style="display:none;"></div>
+    <div id="help-modal" style="display:none;">
+        <div class="help-modal-header">
+            <span>📖 遊戲說明</span>
+            <button id="help-close-btn">X</button>
+        </div>
+        <div class="help-modal-content">
+            <div class="help-section">
+                <h3>🎮 遊戲目標</h3>
+                <p>從凡人開始修煉，突破各個境界，最終飛升成仙。管理你的資源、選擇合適的功法、加入宗門，在修仙世界中不斷成長。</p>
+            </div>
+
+            <div class="help-section">
+                <h3>⚡ 基礎操作</h3>
+                <ul>
+                    <li><strong>閉關修煉：</strong>消耗時間累積真氣，真氣達到上限後可嘗試突破</li>
+                    <li><strong>嘗試突破：</strong>當真氣滿足條件時，可嘗試突破到下一境界</li>
+                    <li><strong>背包：</strong>查看和使用你獲得的物品、裝備</li>
+                    <li><strong>藏寶閣：</strong>使用靈石購買丹藥、裝備等物品</li>
+                    <li><strong>歷練：</strong>前往各種地點進行冒險，獲得獎勵</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h3>🌟 靈根系統</h3>
+                <p>遊戲開始時會測試你的靈根。靈根決定你的修煉速度和可學習的技能：</p>
+                <ul>
+                    <li><strong>天靈根（1種）：</strong>修煉最快，但技能選擇有限</li>
+                    <li><strong>雙靈根（2種）：</strong>修煉較快，技能選擇適中</li>
+                    <li><strong>三靈根（3種）：</strong>凡人資質，修煉速度一般</li>
+                    <li><strong>四靈根（4種）：</strong>修煉緩慢</li>
+                    <li><strong>五靈根（5種）：</strong>修煉極慢，但可學習所有技能</li>
+                </ul>
+                <p>五行屬性：金🗡️、木🌿、水💧、火🔥、土🪨</p>
+            </div>
+
+            <div class="help-section">
+                <h3>🏛️ 宗門系統</h3>
+                <p>加入宗門後可以：</p>
+                <ul>
+                    <li><strong>技藝堂：</strong>學習和升級戰鬥技能</li>
+                    <li><strong>藏經閣：</strong>兌換功法和秘籍</li>
+                    <li><strong>任務堂：</strong>接取任務賺取貢獻和聲望</li>
+                    <li><strong>賭坊：</strong>參與小遊戲（猜大小等）</li>
+                    <li><strong>挑戰：</strong>挑戰其他弟子提升位階</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h3>🎨 四藝系統</h3>
+                <p>修真百藝包含：</p>
+                <ul>
+                    <li><strong>煉丹：</strong>製作各種丹藥</li>
+                    <li><strong>煉器：</strong>打造裝備和法器</li>
+                    <li><strong>陣法：</strong>布置陣法</li>
+                    <li><strong>符籙：</strong>製作符咒</li>
+                    <li><strong>熔煉：</strong>合成高階材料</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h3>💡 遊戲提示</h3>
+                <ul>
+                    <li>注意管理壽元，壽元耗盡會導致坐化</li>
+                    <li>突破境界會增加壽元上限</li>
+                    <li>合理使用靈石購買丹藥和裝備</li>
+                    <li>完成宗門任務可獲得大量貢獻值</li>
+                    <li>記得定期存檔！</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
     <div id="app">
         <!-- ====== 上方標題列 ====== -->
         <div id="header">
-            <div>🧘‍♂️ 修仙模擬 v0.1</div>
+            <div>
+                🧘‍♂️ 修仙模擬 v0.1
+                <button id="btn-help"
+                    style="margin-left: 8px; padding: 0; border: 1px solid rgba(255, 245, 215, 0.4); border-radius: 50%; cursor: pointer; background: rgba(60,40,32,0.6); color: #f8e9c9; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.3s ease;"
+                    onmouseover="this.style.background='rgba(80,60,42,0.8)'"
+                    onmouseout="this.style.background='rgba(60,40,32,0.6)'">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                </button>
+            </div>
             <div id="header-info"></div>
         </div>
 
@@ -169,6 +256,7 @@
                 <summary>戰鬥屬性</summary>
                 <div class="stat-line"><span class="stat-label">攻擊力：</span><span id="s-atk"></span></div>
                 <div class="stat-line"><span class="stat-label">防禦力：</span><span id="s-def"></span></div>
+                <div class="stat-line"><span class="stat-label">身法：</span><span id="s-speed"></span></div>
                 <div class="stat-line"><span class="stat-label">暴擊率：</span><span id="s-crit-rate"></span></div>
                 <div class="stat-line"><span class="stat-label">暴擊傷害：</span><span id="s-crit-dmg"></span></div>
                 <div class="stat-line"><span class="stat-label">血量：</span><span id="s-hp"></span></div>
@@ -176,54 +264,7 @@
                 <div class="stat-line"><span class="stat-label">戰力：</span><span id="s-power"></span></div>
             </details>
 
-            <!-- 裝備欄 -->
-            <details class="info-section">
-                <summary>裝備</summary>
-                <div class="equipment-grid">
-                    <div class="equipment-slot" data-slot="head">
-                        <div class="slot-icon">👑</div>
-                        <div class="slot-info">
-                            <div class="slot-label">頭部</div>
-                            <div class="slot-name" id="eq-head">未裝備</div>
-                        </div>
-                    </div>
-                    <div class="equipment-slot" data-slot="body">
-                        <div class="slot-icon">👘</div>
-                        <div class="slot-info">
-                            <div class="slot-label">衣服</div>
-                            <div class="slot-name" id="eq-body">未裝備</div>
-                        </div>
-                    </div>
-                    <div class="equipment-slot" data-slot="legs">
-                        <div class="slot-icon">👖</div>
-                        <div class="slot-info">
-                            <div class="slot-label">褲子</div>
-                            <div class="slot-name" id="eq-legs">未裝備</div>
-                        </div>
-                    </div>
-                    <div class="equipment-slot" data-slot="feet">
-                        <div class="slot-icon">👞</div>
-                        <div class="slot-info">
-                            <div class="slot-label">鞋子</div>
-                            <div class="slot-name" id="eq-feet">未裝備</div>
-                        </div>
-                    </div>
-                    <div class="equipment-slot" data-slot="weapon">
-                        <div class="slot-icon">⚔️</div>
-                        <div class="slot-info">
-                            <div class="slot-label">法器</div>
-                            <div class="slot-name" id="eq-weapon">未裝備</div>
-                        </div>
-                    </div>
-                    <div class="equipment-slot" data-slot="formation">
-                        <div class="slot-icon">🔮</div>
-                        <div class="slot-info">
-                            <div class="slot-label">陣法</div>
-                            <div class="slot-name" id="eq-formation">未裝備</div>
-                        </div>
-                    </div>
-                </div>
-            </details>
+
 
             <!-- 資源 -->
             <details class="info-section" open>
@@ -354,6 +395,56 @@
         </div>
 
         <div id="inventory-modal-content">
+            <!-- 裝備區域 -->
+            <div id="inventory-equipment-section"
+                style="padding: 10px; background: rgba(0,0,0,0.2); border-bottom: 1px solid #444; margin-bottom: 10px;">
+                <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #e0d0b0;">當前裝備</h3>
+                <div class="equipment-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                    <div class="equipment-slot" data-slot="head">
+                        <div class="slot-icon">👑</div>
+                        <div class="slot-info">
+                            <div class="slot-label">頭部</div>
+                            <div class="slot-name" id="eq-head">未裝備</div>
+                        </div>
+                    </div>
+                    <div class="equipment-slot" data-slot="body">
+                        <div class="slot-icon">👘</div>
+                        <div class="slot-info">
+                            <div class="slot-label">衣服</div>
+                            <div class="slot-name" id="eq-body">未裝備</div>
+                        </div>
+                    </div>
+                    <div class="equipment-slot" data-slot="legs">
+                        <div class="slot-icon">👖</div>
+                        <div class="slot-info">
+                            <div class="slot-label">褲子</div>
+                            <div class="slot-name" id="eq-legs">未裝備</div>
+                        </div>
+                    </div>
+                    <div class="equipment-slot" data-slot="feet">
+                        <div class="slot-icon">👞</div>
+                        <div class="slot-info">
+                            <div class="slot-label">鞋子</div>
+                            <div class="slot-name" id="eq-feet">未裝備</div>
+                        </div>
+                    </div>
+                    <div class="equipment-slot" data-slot="weapon">
+                        <div class="slot-icon">⚔️</div>
+                        <div class="slot-info">
+                            <div class="slot-label">法器</div>
+                            <div class="slot-name" id="eq-weapon">未裝備</div>
+                        </div>
+                    </div>
+                    <div class="equipment-slot" data-slot="formation">
+                        <div class="slot-icon">🔮</div>
+                        <div class="slot-info">
+                            <div class="slot-label">陣法</div>
+                            <div class="slot-name" id="eq-formation">未裝備</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div id="inventory-list"></div>
         </div>
     </div>
@@ -366,71 +457,12 @@
             <button id="arts-close-btn">X</button>
         </div>
         <div class="modal-content">
-            <div class="arts-info-panel">
-                <div id="art-level-display"></div>
-                <!-- Exp bar container will be inserted here by JS -->
-                <div id="art-exp-display" style="display:none;"></div>
-            </div>
 
-            <div class="arts-tabs">
-                <button class="arts-tab-btn active" data-type="alchemy">煉丹</button>
-                <button class="arts-tab-btn" data-type="weapon">煉器</button>
-                <button class="arts-tab-btn" data-type="formation">陣法</button>
-                <button class="arts-tab-btn" data-type="talisman">符籙</button>
-                <button class="arts-tab-btn" data-type="smelting" style="color: #ffd700;">熔煉</button>
-            </div>
-
-            <div id="arts-recipe-list" class="arts-list"></div>
         </div>
     </div>
 
 
-    <!-- Debug Functionality Removed -->
-    <!--
-    <div id="debug-btn" onclick="DebugController.toggle()" ...>DEBUG</div>
-    -->
 
-    <!--
-    <div id="debug-console"
-        style="display: none; position: fixed; top: 10%; right: 10px; width: 300px; max-height: 80vh; overflow-y: auto; background: rgba(0,0,0,0.9); color: #fff; padding: 15px; border-radius: 8px; z-index: 10000; border: 1px solid #555;">
-        <h3 style="margin-top:0; border-bottom: 1px solid #555; padding-bottom: 5px;">控制台</h3>
-
-        <div style="margin-bottom:10px;">
-            <button onclick="DebugController.toggle()">關閉</button>
-            <button onclick="DebugController.fullHeal()">恢復狀態</button>
-        </div>
-
-        <div style="margin-bottom:10px; border-top:1px solid #444; padding-top:5px;">
-            <div>資源修改:</div>
-            <button onclick="DebugController.addResource('spiritStones', 1000)">+1000 靈石</button>
-            <button onclick="DebugController.addResource('qi', 10000)">+1萬 真氣</button>
-            <button onclick="DebugController.addResource('factionContrib', 1000)">+1000 貢獻</button>
-            <button onclick="DebugController.addResource('lifespan', 100)">+100 壽元</button>
-        </div>
-
-        <div style="margin-bottom:10px; border-top:1px solid #444; padding-top:5px;">
-            <div>屬性修改:</div>
-            <button onclick="DebugController.setAttribute('realmLevel', state.realmLevel+1)">+1 境界</button>
-            <button onclick="DebugController.setAttribute('attack', state.attack+100)">+100 攻擊</button>
-            <button onclick="DebugController.setAttribute('defense', state.defense+50)">+50 防禦</button>
-            <button onclick="DebugController.setAttribute('comprehension', state.comprehension+10)">+10 悟性</button>
-            <button onclick="DebugController.setAttribute('luck', state.luck+10)">+10 氣運</button>
-        </div>
-
-        <div style="margin-bottom:10px; border-top:1px solid #444; padding-top:5px;">
-            <div>生活數據:</div>
-            <button onclick="DebugController.addTime(1)">虛度1年</button>
-            <button onclick="DebugController.die()">立即坐化</button>
-        </div>
-
-        <div style="margin-bottom:10px; border-top:1px solid #444; padding-top:5px;">
-            <div>宗門測試:</div>
-            <button onclick="DebugController.joinFaction('qingyun')">加入青雲宗</button>
-            <button onclick="DebugController.joinFaction('moyun')">加入魔雲殿</button>
-            <button onclick="DebugController.joinFaction('danmeng')">加入丹盟</button>
-        </div>
-    </div>
-    -->
 
     <!-- JS 模組載入順序 -->
     <script src="realms.js"></script>
@@ -446,12 +478,14 @@
     <script src="faction.js"></script>
     <script src="trial_rewards.js"></script>
     <script src="sword_mountain.js"></script>
-    <script src="faction_data.js"></script>
+    <script src="contribution.js"></script>
     <script src="arts.js"></script>
     <script src="smelting.js"></script>
+    <script src="skills.js"></script>
 
     <!-- UI Module -->
     <script src="ui.js"></script>
+    <!-- Debug mode disabled for production -->
     <!-- <script src="debug.js"></script> -->
 
     <!-- 手機版底部導航欄 -->

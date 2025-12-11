@@ -11,7 +11,7 @@ const defaultState = {
     lifespan: 80,
     realmLevel: 1,
     qi: 0,
-    qiCap: 0, // 之後初始化
+    qiCap: 100, // 之後初始化
     comprehension: 8,
     luck: 5,
     mindset: 5,
@@ -31,6 +31,7 @@ const defaultState = {
     // 戰鬥相關
     attack: 10,
     defense: 5,
+    speed: 10, // 新增：身法/速度
     critRate: 0.05,
     critDamage: 0.5,
     maxHp: 100,

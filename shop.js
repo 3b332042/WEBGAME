@@ -90,8 +90,19 @@ function ensureShopState() {
 // =============================
 
 function getShopItemDefs() {
-    if (!window.ItemDB) return [];
-    return Object.values(window.ItemDB).filter(def => def.shop && def.shop.isShopItem);
+    let items = [];
+
+    // Get items from ItemDB
+    if (window.ItemDB) {
+        items = items.concat(Object.values(window.ItemDB).filter(def => def.shop && def.shop.isShopItem));
+    }
+
+    // Get materials from MATERIAL_DB
+    if (window.MATERIAL_DB) {
+        items = items.concat(Object.values(window.MATERIAL_DB).filter(def => def.shop && def.shop.isShopItem));
+    }
+
+    return items;
 }
 
 function getSortedShopItemDefs() {
@@ -160,7 +171,11 @@ function renderShop(category) {
         "靈根改造",
         "突破輔助",
         "功法卷軸",
-        "保命道具"
+        "保命道具",
+        "煉丹素材",
+        "煉器素材",
+        "符籙素材",
+        "陣法素材"
     ];
 
     // 創建分類標籤欄

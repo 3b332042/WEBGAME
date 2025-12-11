@@ -1,439 +1,633 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
+
 <head>
-<meta charset="UTF-8" />
-<title>仙靈池</title>
+    <meta charset="UTF-8" />
+    <title>仙靈池</title>
 
-<style>
-html, body{
-    margin:0;padding:0;
-    height:100%;
-    background:#000;
-    overflow:hidden;
-    font-family: "Noto Sans TC", sans-serif;
-}
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: #000;
+            overflow: hidden;
+            font-family: "Noto Sans TC", sans-serif;
+        }
 
-/* === 場景 === */
-.scene{
-    position:relative;
-    width:100%;
-    height:100%;
-    background:
-        radial-gradient(circle at center,
-            rgba(80,150,220,0.6),
-            rgba(20,40,70,0.95) 60%,
-            rgba(5,10,20,1)
-        );
-    overflow:hidden;
-}
+        /* === 場景 === */
+        .scene {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at center,
+                    rgba(80, 150, 220, 0.6),
+                    rgba(20, 40, 70, 0.95) 60%,
+                    rgba(5, 10, 20, 1));
+            overflow: hidden;
+        }
 
-/* ============================
+        /* ============================
       ✦ 多層雲霧（背景）
 ============================ */
-.cloud{
-    position:absolute;
-    width:160%;
-    height:80%;
-    background:radial-gradient(circle,
-        rgba(255,255,255,0.25),
-        rgba(255,255,255,0.05),
-        rgba(255,255,255,0)
-    );
-    top:10%;
-    left:-30%;
-    filter:blur(80px);
-    animation:cloudMove 22s linear infinite;
-}
-@keyframes cloudMove{
-    0%{ transform:translateX(0);}
-    100%{ transform:translateX(30%);}
-}
+        .cloud {
+            position: absolute;
+            width: 160%;
+            height: 80%;
+            background: radial-gradient(circle,
+                    rgba(255, 255, 255, 0.25),
+                    rgba(255, 255, 255, 0.05),
+                    rgba(255, 255, 255, 0));
+            top: 10%;
+            left: -30%;
+            filter: blur(80px);
+            animation: cloudMove 22s linear infinite;
+        }
 
-.cloud2{
-    position:absolute;
-    width:180%;
-    height:100%;
-    top:30%;
-    left:-40%;
-    background:radial-gradient(circle,
-        rgba(200,220,255,0.15),
-        rgba(255,255,255,0.03),
-        rgba(255,255,255,0)
-    );
-    filter:blur(120px);
-    animation:cloudMove2 30s linear infinite;
-}
-@keyframes cloudMove2{
-    0%{ transform:translateX(0);}
-    100%{ transform:translateX(-40%);}
-}
+        @keyframes cloudMove {
+            0% {
+                transform: translateX(0);
+            }
 
-/* ============================
+            100% {
+                transform: translateX(30%);
+            }
+        }
+
+        .cloud2 {
+            position: absolute;
+            width: 180%;
+            height: 100%;
+            top: 30%;
+            left: -40%;
+            background: radial-gradient(circle,
+                    rgba(200, 220, 255, 0.15),
+                    rgba(255, 255, 255, 0.03),
+                    rgba(255, 255, 255, 0));
+            filter: blur(120px);
+            animation: cloudMove2 30s linear infinite;
+        }
+
+        @keyframes cloudMove2 {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-40%);
+            }
+        }
+
+        /* ============================
       ✦ 仙光光柱
 ============================ */
-.light-column{
-    position:absolute;
-    top:0;
-    left:50%;
-    transform:translateX(-50%);
-    width:160px;
-    height:100%;
-    background:linear-gradient(
-        rgba(200,230,255,0.2),
-        rgba(255,255,255,0.4),
-        rgba(200,230,255,0.15)
-    );
-    filter:blur(30px);
-    opacity:0.55;
-    animation:lightPulse 6s ease-in-out infinite;
-}
+        .light-column {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 160px;
+            height: 100%;
+            background: linear-gradient(rgba(200, 230, 255, 0.2),
+                    rgba(255, 255, 255, 0.4),
+                    rgba(200, 230, 255, 0.15));
+            filter: blur(30px);
+            opacity: 0.55;
+            animation: lightPulse 6s ease-in-out infinite;
+        }
 
-@keyframes lightPulse{
-    0%{ opacity:0.45; }
-    50%{ opacity:0.75; }
-    100%{ opacity:0.45; }
-}
+        @keyframes lightPulse {
+            0% {
+                opacity: 0.45;
+            }
 
-/* ============================
+            50% {
+                opacity: 0.75;
+            }
+
+            100% {
+                opacity: 0.45;
+            }
+        }
+
+        /* ============================
       ✦ 水池（多層水面 + 波紋）
 ============================ */
-.pool{
-    position:absolute;
-    bottom:0;
-    left:50%;
-    transform:translateX(-50%);
-    width:80%;
-    height:65%;
-    background:rgba(60,130,200,0.45);
-    border-radius:50% 50% 0 0;
-    overflow:hidden;
-    animation:poolBreath 6s ease-in-out infinite;
-}
-@keyframes poolBreath{
-    0%{ transform:translateX(-50%) scaleX(1); }
-    100%{ transform:translateX(-50%) scaleX(1.03); }
-}
+        .pool {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 65%;
+            background: rgba(60, 130, 200, 0.45);
+            border-radius: 50% 50% 0 0;
+            overflow: hidden;
+            animation: poolBreath 6s ease-in-out infinite;
+        }
 
-/* 水面波紋層 1 */
-.pool::before{
-    content:"";
-    position:absolute; inset:0;
-    background:radial-gradient(circle at center,
-        rgba(255,255,255,0.25) 0%,
-        rgba(255,255,255,0.02) 50%,
-        rgba(255,255,255,0) 70%
-    );
-    animation:ripple1 4.5s infinite ease-in-out;
-}
-@keyframes ripple1{
-    0%{ transform:scale(1); opacity:0.35; }
-    100%{ transform:scale(1.15); opacity:0.1; }
-}
+        @keyframes poolBreath {
+            0% {
+                transform: translateX(-50%) scaleX(1);
+            }
 
-/* 水面波紋層 2（方向不同） */
-.pool::after{
-    content:"";
-    position:absolute; inset:0;
-    background:radial-gradient(circle at 40% 50%,
-        rgba(255,255,255,0.2) 0%,
-        rgba(255,255,255,0.02) 50%,
-        rgba(255,255,255,0) 70%
-    );
-    animation:ripple2 6s infinite ease-in-out;
-}
-@keyframes ripple2{
-    0%{ transform:scale(1.1); opacity:0.3; }
-    100%{ transform:scale(1); opacity:0.12; }
-}
+            100% {
+                transform: translateX(-50%) scaleX(1.03);
+            }
+        }
 
-/* ============================
+        /* 水面波紋層 1 */
+        .pool::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center,
+                    rgba(255, 255, 255, 0.25) 0%,
+                    rgba(255, 255, 255, 0.02) 50%,
+                    rgba(255, 255, 255, 0) 70%);
+            animation: ripple1 4.5s infinite ease-in-out;
+        }
+
+        @keyframes ripple1 {
+            0% {
+                transform: scale(1);
+                opacity: 0.35;
+            }
+
+            100% {
+                transform: scale(1.15);
+                opacity: 0.1;
+            }
+        }
+
+        /* 水面波紋層 2（方向不同） */
+        .pool::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 40% 50%,
+                    rgba(255, 255, 255, 0.2) 0%,
+                    rgba(255, 255, 255, 0.02) 50%,
+                    rgba(255, 255, 255, 0) 70%);
+            animation: ripple2 6s infinite ease-in-out;
+        }
+
+        @keyframes ripple2 {
+            0% {
+                transform: scale(1.1);
+                opacity: 0.3;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 0.12;
+            }
+        }
+
+        /* ============================
       ✦ 仙氣從池底升起
 ============================ */
-.mist{
-    position:absolute;
-    bottom:10%;
-    left:50%;
-    width:220px;
-    height:320px;
-    transform:translateX(-50%);
-    background:radial-gradient(circle,
-        rgba(180,220,255,0.5),
-        rgba(180,220,255,0.08),
-        rgba(255,255,255,0)
-    );
-    filter:blur(20px);
-    animation:mistUp 5s infinite ease-in-out;
-}
-@keyframes mistUp{
-    0%{ transform:translateX(-50%) translateY(20px); opacity:0.55; }
-    100%{ transform:translateX(-50%) translateY(-10px); opacity:0.25; }
-}
+        .mist {
+            position: absolute;
+            bottom: 10%;
+            left: 50%;
+            width: 220px;
+            height: 320px;
+            transform: translateX(-50%);
+            background: radial-gradient(circle,
+                    rgba(180, 220, 255, 0.5),
+                    rgba(180, 220, 255, 0.08),
+                    rgba(255, 255, 255, 0));
+            filter: blur(20px);
+            animation: mistUp 5s infinite ease-in-out;
+        }
 
-/* ============================
+        @keyframes mistUp {
+            0% {
+                transform: translateX(-50%) translateY(20px);
+                opacity: 0.55;
+            }
+
+            100% {
+                transform: translateX(-50%) translateY(-10px);
+                opacity: 0.25;
+            }
+        }
+
+        /* ============================
       ✦ 浮空石台（符文 + 光暈 + 震動）
 ============================ */
-.stone-platform{
-    position:absolute;
-    top:22%;
-    left:50%;
-    transform:translateX(-50%);
-    width:200px;
-    height:70px;
-    border-radius:14px;
-    background:linear-gradient(to bottom, #bcbcbc, #7f7f7f);
-    text-align:center;
-    line-height:70px;
-    font-size:22px;
-    cursor:pointer;
-    color:#fff;
-    letter-spacing:3px;
-    animation:
-        floatUp 3s ease-in-out infinite,
-        stoneGlow 2s ease-in-out infinite;
-    box-shadow:0 0 12px rgba(200,230,255,0.7);
-}
+        .stone-platform {
+            position: absolute;
+            top: 22%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 70px;
+            border-radius: 14px;
+            background: linear-gradient(to bottom, #bcbcbc, #7f7f7f);
+            text-align: center;
+            line-height: 70px;
+            font-size: 22px;
+            cursor: pointer;
+            color: #fff;
+            letter-spacing: 3px;
+            animation:
+                floatUp 3s ease-in-out infinite,
+                stoneGlow 2s ease-in-out infinite;
+            box-shadow: 0 0 12px rgba(200, 230, 255, 0.7);
+        }
 
-@keyframes floatUp{
-    0%{ transform:translateX(-50%) translateY(0);}
-    100%{ transform:translateX(-50%) translateY(-12px);}
-}
+        @keyframes floatUp {
+            0% {
+                transform: translateX(-50%) translateY(0);
+            }
 
-@keyframes stoneGlow{
-    0%{ box-shadow:0 0 12px rgba(200,230,255,0.6); }
-    50%{ box-shadow:0 0 22px rgba(255,255,255,0.9); }
-    100%{ box-shadow:0 0 12px rgba(200,230,255,0.6); }
-}
+            100% {
+                transform: translateX(-50%) translateY(-12px);
+            }
+        }
 
-.stone-platform:hover{
-    background:linear-gradient(to bottom, #e0e0e0, #999);
-    box-shadow:0 0 25px #fff;
-}
+        @keyframes stoneGlow {
+            0% {
+                box-shadow: 0 0 12px rgba(200, 230, 255, 0.6);
+            }
 
-/* ============================
+            50% {
+                box-shadow: 0 0 22px rgba(255, 255, 255, 0.9);
+            }
+
+            100% {
+                box-shadow: 0 0 12px rgba(200, 230, 255, 0.6);
+            }
+        }
+
+        .stone-platform:hover {
+            background: linear-gradient(to bottom, #e0e0e0, #999);
+            box-shadow: 0 0 25px #fff;
+        }
+
+        /* ============================
       ✦ 粒子（靈光）
 ============================ */
-.particle{
-    position:absolute;
-    width:6px;
-    height:6px;
-    background:rgba(255,255,255,0.9);
-    border-radius:50%;
-    filter:blur(2px);
-    animation:particleFloat 4s infinite linear;
-}
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            filter: blur(2px);
+            animation: particleFloat 4s infinite linear;
+        }
 
-@keyframes particleFloat{
-    0%{ transform:translateY(0) scale(0.6); opacity:1; }
-    100%{ transform:translateY(-200px) scale(1.2); opacity:0; }
-}
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(0) scale(0.6);
+                opacity: 1;
+            }
 
-/* ============================
+            100% {
+                transform: translateY(-200px) scale(1.2);
+                opacity: 0;
+            }
+        }
+
+        /* ============================
       ✦ 返回按鈕
 ============================ */
-.back-btn{
-    position:absolute;
-    top:16px;
-    left:16px;
-    padding:6px 16px;
-    background:rgba(0,0,0,0.6);
-    border:1px solid rgba(255,255,255,0.4);
-    border-radius:6px;
-    color:#fff;
-    cursor:pointer;
-    backdrop-filter:blur(3px);
-    z-index:20;
-}
-.back-btn:hover{
-    background:rgba(255,255,255,0.15);
-}
-/* ===== 遠景山影 ===== */
-.mountain-back {
-    position:absolute;
-    bottom:0;
-    left:50%;
-    transform:translateX(-50%);
-    width:200%;
-    height:45%;
-    background:radial-gradient(circle at 50% 80%,
-        rgba(20,40,70,0.65),
-        rgba(10,20,40,0.9),
-        rgba(0,0,0,1)
-    );
-    clip-path: polygon(
-        0% 100%, 10% 70%, 20% 82%, 30% 65%,
-        40% 78%, 50% 55%, 60% 75%, 70% 62%,
-        80% 80%, 90% 65%, 100% 100%
-    );
-    opacity:0.55;
-    filter:blur(8px);
-}
-/* ===== 浮空巨石（左） ===== */
-.floating-rock-left {
-    position:absolute;
-    top:18%;
-    left:5%;
-    width:150px;
-    height:200px;
-    background:linear-gradient(135deg,
-        #444, #222 40%, #111
-    );
-    border-radius:20px;
-    filter:blur(1px);
-    opacity:0.7;
-    transform:rotate(-12deg);
-    animation:rockFloatLeft 6s ease-in-out infinite;
-}
-@keyframes rockFloatLeft {
-    0%   { transform:translateY(0) rotate(-12deg); }
-    100% { transform:translateY(-10px) rotate(-10deg); }
-}
+        .back-btn {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            padding: 6px 16px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 6px;
+            color: #fff;
+            cursor: pointer;
+            backdrop-filter: blur(3px);
+            z-index: 20;
+        }
 
-/* ===== 浮空巨石（右） ===== */
-.floating-rock-right {
-    position:absolute;
-    top:28%;
-    right:6%;
-    width:180px;
-    height:240px;
-    background:linear-gradient(135deg,
-        #555, #333 40%, #111
-    );
-    border-radius:30px;
-    opacity:0.65;
-    filter:blur(1px);
-    transform:rotate(8deg);
-    animation:rockFloatRight 7s ease-in-out infinite;
-}
-@keyframes rockFloatRight {
-    0%   { transform:translateY(0) rotate(8deg); }
-    100% { transform:translateY(-12px) rotate(10deg); }
-}
-/* ===== 天空亮部 ===== */
-.sky-glow {
-    position:absolute;
-    top:0;
-    left:0;
-    width:100%;
-    height:40%;
-    background:radial-gradient(circle at 50% 20%,
-        rgba(180,220,255,0.25),
-        rgba(40,80,120,0.15),
-        rgba(0,0,0,0)
-    );
-    filter:blur(40px);
-}
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
 
-/* ===== 天空星點 ===== */
-.star {
-    position:absolute;
-    width:4px;
-    height:4px;
-    background:white;
-    border-radius:50%;
-    opacity:0.8;
-    filter:blur(1px);
-    animation:starBlink 3s ease-in-out infinite;
-}
-@keyframes starBlink {
-    0% { opacity:0.4; transform:scale(0.6); }
-    50%{ opacity:1;   transform:scale(1); }
-    100%{ opacity:0.4; transform:scale(0.6); }
-}
-/* ===== 前景漂霧 ===== */
-.front-mist {
-    position:absolute;
-    bottom:15%;
-    left:50%;
-    width:200%;
-    height:80px;
-    transform:translateX(-50%);
-    background:radial-gradient(circle,
-        rgba(255,255,255,0.15),
-        rgba(180,220,255,0.05),
-        rgba(255,255,255,0)
-    );
-    filter:blur(50px);
-    opacity:0.5;
-    animation:mistMove 16s infinite alternate ease-in-out;
-}
-@keyframes mistMove {
-    0%{ transform:translateX(-60%); }
-    100%{ transform:translateX(0%); }
-}
-/* ===== 背景陣法 ===== */
-.circle-array {
-    position:absolute;
-    top:35%;
-    left:50%;
-    width:520px;
-    height:520px;
-    transform:translateX(-50%);
-    border:2px solid rgba(180,220,255,0.35);
-    border-radius:50%;
-    filter:blur(3px);
-    opacity:0.35;
-    animation:arrayRotate 45s linear infinite;
-}
+        /* ===== 遠景山影 ===== */
+        .mountain-back {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200%;
+            height: 45%;
+            background: radial-gradient(circle at 50% 80%,
+                    rgba(20, 40, 70, 0.65),
+                    rgba(10, 20, 40, 0.9),
+                    rgba(0, 0, 0, 1));
+            clip-path: polygon(0% 100%, 10% 70%, 20% 82%, 30% 65%,
+                    40% 78%, 50% 55%, 60% 75%, 70% 62%,
+                    80% 80%, 90% 65%, 100% 100%);
+            opacity: 0.55;
+            filter: blur(8px);
+        }
 
-@keyframes arrayRotate {
-    0%{ transform:translateX(-50%) rotate(0deg); }
-    100%{ transform:translateX(-50%) rotate(360deg); }
-}
+        /* ===== 浮空巨石（左） ===== */
+        .floating-rock-left {
+            position: absolute;
+            top: 18%;
+            left: 5%;
+            width: 150px;
+            height: 200px;
+            background: linear-gradient(135deg,
+                    #444, #222 40%, #111);
+            border-radius: 20px;
+            filter: blur(1px);
+            opacity: 0.7;
+            transform: rotate(-12deg);
+            animation: rockFloatLeft 6s ease-in-out infinite;
+        }
 
-</style>
+        @keyframes rockFloatLeft {
+            0% {
+                transform: translateY(0) rotate(-12deg);
+            }
+
+            100% {
+                transform: translateY(-10px) rotate(-10deg);
+            }
+        }
+
+        /* ===== 浮空巨石（右） ===== */
+        .floating-rock-right {
+            position: absolute;
+            top: 28%;
+            right: 6%;
+            width: 180px;
+            height: 240px;
+            background: linear-gradient(135deg,
+                    #555, #333 40%, #111);
+            border-radius: 30px;
+            opacity: 0.65;
+            filter: blur(1px);
+            transform: rotate(8deg);
+            animation: rockFloatRight 7s ease-in-out infinite;
+        }
+
+        @keyframes rockFloatRight {
+            0% {
+                transform: translateY(0) rotate(8deg);
+            }
+
+            100% {
+                transform: translateY(-12px) rotate(10deg);
+            }
+        }
+
+        /* ===== 天空亮部 ===== */
+        .sky-glow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 40%;
+            background: radial-gradient(circle at 50% 20%,
+                    rgba(180, 220, 255, 0.25),
+                    rgba(40, 80, 120, 0.15),
+                    rgba(0, 0, 0, 0));
+            filter: blur(40px);
+        }
+
+        /* ===== 天空星點 ===== */
+        .star {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            filter: blur(1px);
+            animation: starBlink 3s ease-in-out infinite;
+        }
+
+        @keyframes starBlink {
+            0% {
+                opacity: 0.4;
+                transform: scale(0.6);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            100% {
+                opacity: 0.4;
+                transform: scale(0.6);
+            }
+        }
+
+        /* ===== 前景漂霧 ===== */
+        .front-mist {
+            position: absolute;
+            bottom: 15%;
+            left: 50%;
+            width: 200%;
+            height: 80px;
+            transform: translateX(-50%);
+            background: radial-gradient(circle,
+                    rgba(255, 255, 255, 0.15),
+                    rgba(180, 220, 255, 0.05),
+                    rgba(255, 255, 255, 0));
+            filter: blur(50px);
+            opacity: 0.5;
+            animation: mistMove 16s infinite alternate ease-in-out;
+        }
+
+        @keyframes mistMove {
+            0% {
+                transform: translateX(-60%);
+            }
+
+            100% {
+                transform: translateX(0%);
+            }
+        }
+
+        /* ===== 背景陣法 ===== */
+        .circle-array {
+            position: absolute;
+            top: 35%;
+            left: 50%;
+            width: 520px;
+            height: 520px;
+            transform: translateX(-50%);
+            border: 2px solid rgba(180, 220, 255, 0.35);
+            border-radius: 50%;
+            filter: blur(3px);
+            opacity: 0.35;
+            animation: arrayRotate 45s linear infinite;
+        }
+
+        @keyframes arrayRotate {
+            0% {
+                transform: translateX(-50%) rotate(0deg);
+            }
+
+            100% {
+                transform: translateX(-50%) rotate(360deg);
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="scene">
-<div class="mountain-back"></div>
-<div class="floating-rock-left"></div>
-<div class="floating-rock-right"></div>
-<div class="sky-glow"></div>
-<div class="circle-array"></div>
-<div class="front-mist"></div>
+    <div class="scene">
+        <div class="mountain-back"></div>
+        <div class="floating-rock-left"></div>
+        <div class="floating-rock-right"></div>
+        <div class="sky-glow"></div>
+        <div class="circle-array"></div>
+        <div class="front-mist"></div>
 
-    <button class="back-btn" onclick="goBack()">返回宗門</button>
+        <button class="back-btn" onclick="goBack()">返回宗門</button>
 
-    <div class="cloud"></div>
-    <div class="cloud2"></div>
-    <div class="light-column"></div>
+        <div class="cloud"></div>
+        <div class="cloud2"></div>
+        <div class="light-column"></div>
 
-    <div class="pool"></div>
-    <div class="mist"></div>
+        <div class="pool"></div>
+        <div class="mist"></div>
 
-    <div class="stone-platform" onclick="clickPlatform()">
-        靈泉洗髓
+        <div class="stone-platform" onclick="clickPlatform()">
+            靈泉洗髓
+        </div>
+
+        <!-- ⭐ 靈光粒子 30 個自動升空 -->
+        <script>
+            for (let i = 0; i < 30; i++) {
+                let p = document.createElement("div");
+                p.className = "particle";
+                p.style.left = (Math.random() * 80 + 10) + "%";
+                p.style.bottom = (Math.random() * 40 + 5) + "%";
+                p.style.animationDelay = (Math.random() * 4) + "s";
+                document.body.appendChild(p);
+            }
+        </script>
+
     </div>
 
-    <!-- ⭐ 靈光粒子 30 個自動升空 -->
     <script>
-    for(let i=0;i<30;i++){
-        let p=document.createElement("div");
-        p.className="particle";
-        p.style.left=(Math.random()*80+10)+"%";
-        p.style.bottom=(Math.random()*40+5)+"%";
-        p.style.animationDelay=(Math.random()*4)+"s";
-        document.body.appendChild(p);
-    }
+        function goBack() { window.location.href = "faction.html"; }
+        function clickPlatform() {
+            // Check if already used
+            if (window.opener && window.opener.state) {
+                // Check rank requirement (真傳弟子 = rank 2+)
+                const playerRank = window.opener.state.factionRank || 0;
+                if (playerRank < 2) {
+                    alert("仙靈池乃宗門至寶，只有真傳弟子及以上才有資格使用！\n\n當前身份不足，請先提升宗門地位。");
+                    return;
+                }
+
+                if (window.opener.state.spiritPoolUsed) {
+                    alert("仙靈池已經使用過了，無法再次使用。");
+                    return;
+                }
+
+                // Mark as used
+                window.opener.state.spiritPoolUsed = true;
+
+                // Randomly choose between cultivation or combat bonuses
+                const isCultivation = Math.random() < 0.5;
+                let bonusMessage = "";
+
+                if (isCultivation) {
+                    // Cultivation bonuses
+                    window.opener.state.comprehension = (window.opener.state.comprehension || 0) + 10;
+                    window.opener.state.mindset = (window.opener.state.mindset || 0) + 10;
+                    window.opener.state.luck = (window.opener.state.luck || 0) + 10;
+                    window.opener.state.spiritStones = (window.opener.state.spiritStones || 0) + 5000;
+
+                    bonusMessage = "你浸入仙靈池，靈氣洗滌心神，修煉天賦大增！\n\n" +
+                        "【修煉屬性提升】\n" +
+                        "✦ 悟性 +10\n" +
+                        "✦ 心境 +10\n" +
+                        "✦ 氣運 +10\n" +
+                        "✦ 靈石 +5,000\n\n" +
+                        "仙靈池已耗盡靈力，無法再次使用。";
+                } else {
+                    // Combat bonuses
+                    window.opener.state.baseMaxHp = (window.opener.state.baseMaxHp || 100) + 200;
+                    window.opener.state.baseAttack = (window.opener.state.baseAttack || 10) + 30;
+                    window.opener.state.baseDefense = (window.opener.state.baseDefense || 5) + 30;
+                    window.opener.state.baseSpeed = (window.opener.state.baseSpeed || 10) + 15;
+                    window.opener.state.baseCritRate = (window.opener.state.baseCritRate || 0.05) + 0.1;
+
+                    bonusMessage = "你浸入仙靈池，靈氣淬煉肉身，戰力暴增！\n\n" +
+                        "【戰鬥屬性提升】\n" +
+                        "✦ 生命上限 +200\n" +
+                        "✦ 攻擊力 +30\n" +
+                        "✦ 防禦力 +30\n" +
+                        "✦ 速度 +15\n" +
+                        "✦ 暴擊率 +10%\n\n" +
+                        "仙靈池已耗盡靈力，無法再次使用。";
+                }
+
+                // Recalculate stats if function exists
+                if (window.opener.recalcStats) {
+                    window.opener.recalcStats();
+                }
+
+                // Save state
+                if (window.opener.saveGameState) {
+                    window.opener.saveGameState();
+                }
+
+                // Update UI if available
+                if (window.opener.renderUI) {
+                    window.opener.renderUI();
+                }
+
+                alert(bonusMessage);
+
+                // Disable the button visually
+                const platform = document.querySelector('.stone-platform');
+                if (platform) {
+                    platform.style.opacity = '0.5';
+                    platform.style.cursor = 'not-allowed';
+                    platform.style.background = 'linear-gradient(to bottom, #666, #444)';
+                    platform.innerHTML = '靈力耗盡';
+                }
+            } else {
+                alert("無法連接到遊戲狀態，請從宗門界面進入。");
+            }
+        }
+        for (let i = 0; i < 40; i++) {
+            let s = document.createElement("div");
+            s.className = "star";
+            s.style.left = (Math.random() * 100) + "%";
+            s.style.top = (Math.random() * 35) + "%";
+            s.style.animationDelay = (Math.random() * 3) + "s";
+            document.body.appendChild(s);
+        }
+
+        // Check if already used on page load
+        window.addEventListener('load', function () {
+            if (window.opener && window.opener.state && window.opener.state.spiritPoolUsed) {
+                const platform = document.querySelector('.stone-platform');
+                if (platform) {
+                    platform.style.opacity = '0.5';
+                    platform.style.cursor = 'not-allowed';
+                    platform.style.background = 'linear-gradient(to bottom, #666, #444)';
+                    platform.innerHTML = '靈力耗盡';
+                }
+            }
+        });
     </script>
 
-</div>
-
-<script>
-function goBack(){ window.location.href="faction.html"; }
-function clickPlatform(){
-    alert("你浸入仙靈池，經脈洗滌：悟性 +1、心境 +1、氣運 +1");
-}
-for(let i=0;i<40;i++){
-    let s=document.createElement("div");
-    s.className="star";
-    s.style.left=(Math.random()*100)+"%";
-    s.style.top=(Math.random()*35)+"%";
-    s.style.animationDelay=(Math.random()*3)+"s";
-    document.body.appendChild(s);
-}
-</script>
-
 </body>
+
 </html>
