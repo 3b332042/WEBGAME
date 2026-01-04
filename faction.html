@@ -1,0 +1,1968 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>修仙宗門場景 – 功法閣 / 榮譽堂 / 仙靈池</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            font-family: "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+            background: radial-gradient(circle at top, #f5f3ea 0, #e5e0d3 35%, #d0cabd 100%);
+        }
+
+        /* ===== 整體場景 ===== */
+        .scene {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ⭐ 返回按鈕 */
+        .back-btn {
+            position: absolute;
+            top: 18px;
+            left: 26px;
+            padding: 6px 18px;
+            border-radius: 18px;
+            background: rgba(26, 18, 16, 0.78);
+            color: #f6e7c6;
+            border: 1px solid rgba(246, 231, 198, 0.85);
+            cursor: pointer;
+            font-size: 13px;
+            letter-spacing: 2px;
+            z-index: 20;
+        }
+
+        .back-btn:hover {
+            background: rgba(40, 28, 24, 0.9);
+            box-shadow: 0 0 8px rgba(246, 231, 198, 0.7);
+        }
+
+        /* ===== 遠景山脈 ===== */
+        .bg-mountain {
+            position: absolute;
+            bottom: -10vh;
+            width: 50vw;
+            height: 55vh;
+            background: linear-gradient(to top, #a19c8d 0, #d5d0c3 60%, #f3f0e7 100%);
+            border-radius: 60% 40% 0 0;
+            opacity: 0.7;
+            filter: blur(1px);
+        }
+
+        .bg-mountain.left {
+            left: -10vw;
+        }
+
+        .bg-mountain.right {
+            right: -15vw;
+        }
+
+        /* ===== 雲霧 ===== */
+        .cloud {
+            position: absolute;
+            width: 220px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 40px;
+            filter: blur(1px);
+            opacity: 0.9;
+            box-shadow:
+                40px 8px 0 rgba(255, 255, 255, 0.9),
+                90px -6px 0 rgba(255, 255, 255, 0.85);
+            animation: drift 60s linear infinite;
+        }
+
+        .cloud.small {
+            width: 160px;
+            height: 45px;
+            box-shadow:
+                30px 6px 0 rgba(255, 255, 255, 0.9),
+                70px -4px 0 rgba(255, 255, 255, 0.85);
+        }
+
+        .cloud.c1 {
+            top: 14vh;
+            left: -25vw;
+            animation-delay: 0s;
+        }
+
+        .cloud.c2 {
+            top: 28vh;
+            left: -40vw;
+            animation-delay: 8s;
+        }
+
+        .cloud.c3 {
+            top: 8vh;
+            left: -50vw;
+            animation-delay: 18s;
+        }
+
+        .cloud.c4 {
+            top: 36vh;
+            left: -35vw;
+            animation-delay: 28s;
+        }
+
+        @keyframes drift {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(170vw);
+            }
+        }
+
+        /* ===== 懸浮島共用樣式 ===== */
+        .floating-island {
+            position: absolute;
+            width: 260px;
+            height: 70px;
+            background: linear-gradient(to bottom, #a2967a 0, #6c5f4a 60%, #4d4236 100%);
+            border-radius: 60% 60% 50% 50%;
+            box-shadow:
+                0 10px 25px rgba(0, 0, 0, 0.4),
+                0 -6px 10px rgba(255, 255, 255, 0.35) inset;
+        }
+
+        .floating-island::after {
+            content: "";
+            position: absolute;
+            left: 15%;
+            right: 15%;
+            top: 30px;
+            height: 80px;
+            background: linear-gradient(to bottom, #756653 0, #4b4033 100%);
+            clip-path: polygon(10% 0, 90% 0, 70% 40%, 60% 80%, 45% 100%, 30% 80%, 20% 40%);
+            opacity: 0.95;
+        }
+
+        .island-left {
+            bottom: 14vh;
+            left: 6vw;
+        }
+
+        .island-mid {
+            bottom: 18vh;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .island-right {
+            bottom: 12vh;
+            right: 6vw;
+        }
+
+        /* ===== 共用：建築上方匾額 ===== */
+        .building-sign {
+            position: absolute;
+            top: -90px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 4px 2px;
+            border-radius: 16px;
+            background: #2b1a16;
+            border: 2px solid #f1d38f;
+            color: #f6e7c6;
+            font-size: 14px;
+            letter-spacing: 4px;
+            box-shadow:
+                0 0 0 1px #674430 inset,
+                0 4px 6px rgba(0, 0, 0, 0.5);
+        }
+
+        /* =========================
+   左側：功法閣（藏書樓）
+   ========================= */
+        .temple-left-wrapper {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 170px;
+            height: 160px;
+        }
+
+        /* 台階與柱子 */
+        .temple-base {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 130px;
+            height: 30px;
+            background: linear-gradient(to top, #b99c7a 0, #e2c8a3 70%);
+            border-radius: 4px;
+            box-shadow:
+                0 0 0 2px #7e5f4b inset,
+                0 7px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .temple-pillars {
+            position: absolute;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 58px;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 8px;
+        }
+
+        .temple-pillar {
+            width: 10px;
+            background: linear-gradient(to right, #6d3024 0, #8c3d2d 40%, #5a241a 100%);
+            border-radius: 4px;
+            box-shadow:
+                0 0 0 1px #3a1510 inset,
+                0 4px 6px rgba(0, 0, 0, 0.5);
+        }
+
+        /* 門洞 */
+        .temple-door {
+            position: absolute;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 54px;
+            height: 46px;
+            background: #2b1c1a;
+            border-radius: 2px 2px 0 0;
+            box-shadow:
+                0 0 0 2px #5d3c2f inset,
+                0 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        /* 多層屋頂 */
+        .temple-roof {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 22px;
+            background: linear-gradient(to bottom, #8d3f32 0, #4a1c18 100%);
+            border-radius: 24px 24px 4px 4px;
+            box-shadow:
+                0 4px 0 #371412,
+                0 8px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .temple-roof.r1 {
+            bottom: 65px;
+            width: 146px;
+        }
+
+        .temple-roof.r2 {
+            bottom: 94px;
+            width: 118px;
+        }
+
+        .temple-roof.r3 {
+            bottom: 122px;
+            width: 90px;
+        }
+
+        .temple-roof::before,
+        .temple-roof::after {
+            content: "";
+            position: absolute;
+            bottom: 4px;
+            width: 22px;
+            height: 18px;
+            background: linear-gradient(to bottom, #a54a39 0, #4a1c18 100%);
+            transform-origin: center bottom;
+        }
+
+        .temple-roof::before {
+            left: -10px;
+            transform: rotate(-16deg);
+        }
+
+        .temple-roof::after {
+            right: -10px;
+            transform: rotate(16deg);
+        }
+
+        /* 頂端小塔 */
+        .temple-top-tower {
+            position: absolute;
+            bottom: 145px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 32px;
+            height: 40px;
+            background: #c8b49b;
+            border-radius: 4px 4px 0 0;
+            box-shadow: 0 0 0 2px #7f664e inset;
+        }
+
+        .temple-top-tower::before {
+            content: "";
+            position: absolute;
+            bottom: 30px;
+            left: -10px;
+            right: -10px;
+            height: 18px;
+            background: linear-gradient(to bottom, #8d3f32 0, #4a1c18 100%);
+            border-radius: 18px 18px 4px 4px;
+            box-shadow:
+                0 3px 0 #371412,
+                0 6px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        .temple-top-tower::after {
+            content: "";
+            position: absolute;
+            bottom: 52px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 18px;
+            height: 18px;
+            background: #4a1c18;
+            clip-path: polygon(50% 0, 100% 100%, 0 100%);
+        }
+
+        /* 懸掛燈籠 */
+        .lantern-row {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .lantern {
+            width: 12px;
+            height: 18px;
+            background: radial-gradient(circle at 50% 20%, #fff6d2 0, #f89b3a 45%, #c34a1f 100%);
+            border-radius: 50% 50% 40% 40%;
+            box-shadow: 0 0 8px rgba(255, 180, 90, 0.7);
+            position: relative;
+        }
+
+        .lantern::before {
+            content: "";
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            width: 2px;
+            height: 6px;
+            background: #4a1c18;
+            transform: translateX(-50%);
+        }
+
+        .lantern::after {
+            content: "";
+            position: absolute;
+            bottom: -4px;
+            left: 50%;
+            width: 6px;
+            height: 4px;
+            background: #c34a1f;
+            transform: translateX(-50%);
+        }
+
+        /* =========================
+   中央：榮譽堂（宗門大門）
+   ========================= */
+        .gate {
+            position: absolute;
+            bottom: 38px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 220px;
+            height: 160px;
+            cursor: pointer;
+            /* 加個手形 */
+        }
+
+        /* 匾額：榮譽堂 */
+        .gate .building-sign {
+            top: -55px;
+        }
+
+        /* 石台階 */
+        .gate-base {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 160px;
+            height: 26px;
+            background: linear-gradient(to top, #b4a48e 0, #e2d8c4 70%);
+            border-radius: 3px;
+            box-shadow:
+                0 0 0 2px #8a7a65 inset,
+                0 7px 8px rgba(0, 0, 0, 0.45);
+        }
+
+        /* 兩側大柱 */
+        .gate-column {
+            position: absolute;
+            bottom: 24px;
+            width: 40px;
+            height: 110px;
+            background: linear-gradient(to right, #864632 0, #b56a4a 40%, #6f3628 100%);
+            box-shadow:
+                0 0 0 2px #4b1e18 inset,
+                0 6px 10px rgba(0, 0, 0, 0.55);
+            border-radius: 4px;
+        }
+
+        .gate-column.left {
+            left: 22px;
+        }
+
+        .gate-column.right {
+            right: 22px;
+        }
+
+        .gate-column::before {
+            content: "";
+            position: absolute;
+            inset: 14px 7px;
+            border-radius: 4px;
+            border: 1px solid rgba(250, 214, 142, 0.7);
+            opacity: 0.9;
+        }
+
+        .gate-column::after {
+            content: "";
+            position: absolute;
+            bottom: -26px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 26px;
+            height: 32px;
+            background: #6d3a2d;
+            clip-path: polygon(0 0, 100% 0, 50% 100%);
+            box-shadow:
+                0 0 0 1px #3a1714 inset,
+                0 6px 8px rgba(0, 0, 0, 0.6);
+        }
+
+        /* 側翼飛檐 */
+        .gate-wing {
+            position: absolute;
+            bottom: 98px;
+            width: 86px;
+            height: 20px;
+            background: linear-gradient(to bottom, #8d3f32 0, #4a1c18 100%);
+            border-radius: 20px 20px 4px 4px;
+            box-shadow:
+                0 3px 0 #371412,
+                0 7px 6px rgba(0, 0, 0, 0.45);
+        }
+
+        .gate-wing.left {
+            left: -4px;
+        }
+
+        .gate-wing.right {
+            right: -4px;
+        }
+
+        .gate-wing::before,
+        .gate-wing::after {
+            content: "";
+            position: absolute;
+            bottom: 3px;
+            width: 20px;
+            height: 16px;
+            background: linear-gradient(to bottom, #a54a39 0, #4a1c18 100%);
+            transform-origin: center bottom;
+        }
+
+        .gate-wing::before {
+            left: -10px;
+            transform: rotate(-16deg);
+        }
+
+        .gate-wing::after {
+            right: -10px;
+            transform: rotate(16deg);
+        }
+
+        /* 中央橫樑 */
+        .gate-top {
+            position: absolute;
+            bottom: 104px;
+            left: 28px;
+            right: 28px;
+            height: 26px;
+            background: linear-gradient(to bottom, #7c4033 0, #4b221f 100%);
+            box-shadow:
+                0 4px 0 #321312,
+                0 8px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        /* 上方拱形屋頂 */
+        .gate-crest {
+            position: absolute;
+            bottom: 132px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 130px;
+            height: 40px;
+            background: #7c4033;
+            border-radius: 60px 60px 12px 12px;
+            box-shadow:
+                0 4px 0 #4b221f,
+                0 12px 10px rgba(0, 0, 0, 0.45);
+        }
+
+        .gate-crest::before,
+        .gate-crest::after {
+            content: "";
+            position: absolute;
+            bottom: 6px;
+            width: 30px;
+            height: 20px;
+            background: linear-gradient(to bottom, #a54a39 0, #4a1c18 100%);
+            transform-origin: center bottom;
+        }
+
+        .gate-crest::before {
+            left: -16px;
+            transform: rotate(-18deg);
+        }
+
+        .gate-crest::after {
+            right: -16px;
+            transform: rotate(18deg);
+        }
+
+        /* 金色內框 */
+        .gate-crest-inner {
+            position: absolute;
+            bottom: 138px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 110px;
+            height: 28px;
+            border-radius: 30px;
+            border: 2px solid #f4d79e;
+        }
+
+        /* 中央懸浮光環 */
+        .gate-ring {
+            position: absolute;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 200, 120, 0.9);
+            box-shadow:
+                0 0 9px rgba(255, 210, 140, 0.9),
+                0 0 18px rgba(255, 210, 140, 0.7);
+        }
+
+        /* =========================
+   右側：仙靈池
+   ========================= */
+        .spirit-pool-wrapper {
+            position: absolute;
+            bottom: 26px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 180px;
+            height: 130px;
+        }
+
+        /* 石基座 */
+        .pool-base {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 26px;
+            background: linear-gradient(to top, #bca88d 0, #e6d5bd 70%);
+            border-radius: 10px;
+            box-shadow:
+                0 0 0 2px #7a644e inset,
+                0 6px 8px rgba(0, 0, 0, 0.45);
+        }
+
+        /* 靈池外圈 */
+        .pool-ring {
+            position: absolute;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 130px;
+            height: 50px;
+            background: radial-gradient(circle at 50% 40%, #f7f4ee 0, #c5b8a2 80%);
+            border-radius: 50%;
+            box-shadow:
+                0 0 0 2px #9a8871 inset,
+                0 3px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        /* 靈池水面 */
+        .pool-water {
+            position: absolute;
+            bottom: 26px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 114px;
+            height: 34px;
+            background: radial-gradient(circle at 50% 20%, #b9f7ff 0, #67c3d6 45%, #3a7f95 90%);
+            border-radius: 50%;
+            box-shadow:
+                0 0 10px rgba(120, 220, 240, 0.8),
+                0 0 18px rgba(110, 200, 230, 0.6);
+        }
+
+        /* 靈力旋渦 */
+        .pool-ripple {
+            position: absolute;
+            inset: 6px 14px;
+            border-radius: 50%;
+            border: 1px dashed rgba(255, 255, 255, 0.7);
+            opacity: 0.7;
+            animation: rippleSpin 10s linear infinite;
+        }
+
+        @keyframes rippleSpin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 中央靈柱 */
+        .spirit-pillar {
+            position: absolute;
+            bottom: 52px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 26px;
+            height: 70px;
+            background: linear-gradient(to top, #f2f1ef 0, #ffffff 40%);
+            border-radius: 20px;
+            box-shadow:
+                0 0 0 2px #d6cec4 inset,
+                0 0 16px rgba(165, 240, 255, 0.9);
+        }
+
+        /* 靈柱頂端光環 */
+        .spirit-ring {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid rgba(192, 248, 255, 0.9);
+            box-shadow:
+                0 0 8px rgba(180, 245, 255, 0.9),
+                0 0 18px rgba(180, 245, 255, 0.7);
+        }
+
+        /* 靈火 */
+        .spirit-flame {
+            position: absolute;
+            top: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 18px;
+            height: 26px;
+            background: radial-gradient(circle at 50% 20%, #ffffff 0, #fffac5 30%, #8ef1ff 60%, #2da0ff 90%);
+            clip-path: polygon(50% 0, 100% 40%, 70% 100%, 30% 100%, 0 40%);
+            box-shadow: 0 0 16px rgba(160, 240, 255, 0.9);
+        }
+
+        /* =========================
+           新增：藏寶閣（商店）
+           ========================= */
+        .island-shop {
+            bottom: 22vh;
+            left: 72%;
+            transform: translateX(-50%);
+            z-index: 5;
+        }
+
+        .shop-wrapper {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 160px;
+            height: 140px;
+            cursor: pointer;
+        }
+
+        .shop-base {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 24px;
+            background: #5d4037;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+        }
+
+        .shop-body {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 80px;
+            background: #795548;
+            border: 2px solid #3e2723;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 金色屋頂 */
+        .shop-roof {
+            position: absolute;
+            bottom: 104px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 30px;
+            background: linear-gradient(to bottom, #ffecb3 0%, #ffca28 100%);
+            border-radius: 40px 40px 4px 4px;
+            box-shadow: 0 4px 0 #ff6f00, 0 8px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .shop-roof::before {
+            content: "";
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 20px;
+            background: #ffca28;
+            border-radius: 50%;
+            border: 2px solid #ff6f00;
+        }
+
+        /* 門簾大大的 "寶" 字 */
+        .shop-sign-text {
+            color: #ffca28;
+            font-size: 24px;
+            font-weight: bold;
+            border: 2px solid #ffca28;
+            padding: 4px;
+            border-radius: 4px;
+            background: #3e2723;
+        }
+
+        /* ===== LOGO ===== */
+        .logo {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            font-size: 28px;
+            letter-spacing: 4px;
+            color: #3c2c22;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+        }
+
+        .logo span.red {
+            color: #b23118;
+            font-size: 18px;
+            border: 1px solid #b23118;
+            padding: 2px 3px;
+            margin-bottom: 4px;
+        }
+
+        /* 中景山（在中間偏左右） */
+        .bg-mountain.mid {
+            width: 35vw;
+            height: 45vh;
+            opacity: 0.8;
+        }
+
+        /* 小一點的山峰 */
+        .bg-mountain.small-peak {
+            width: 22vw;
+            height: 38vh;
+            opacity: 0.9;
+            filter: blur(0.5px);
+        }
+
+        /* ====== 新增：整排山脈 ====== */
+
+        /* 遠山（最淡、最大） */
+        .mountain-range-back {
+            position: absolute;
+            bottom: -5vh;
+            left: 0;
+            width: 200vw;
+            height: 40vh;
+            background: radial-gradient(circle at 50% 120%, #e1ddd3 0%, #c9c3b8 70%, transparent 100%);
+            opacity: 0.55;
+            transform: translateX(-20vw);
+            filter: blur(2px);
+            z-index: 0;
+        }
+
+        /* 中景山（較深、有起伏） */
+        .mountain-range-mid {
+            position: absolute;
+            bottom: -6vh;
+            left: 0;
+            width: 200vw;
+            height: 32vh;
+            background: #b8ae9e;
+            clip-path: polygon(0% 60%, 10% 45%, 25% 55%, 35% 38%, 50% 52%,
+                    65% 40%, 75% 60%, 90% 42%, 100% 55%, 100% 100%, 0% 100%);
+            opacity: 0.75;
+            z-index: 1;
+        }
+
+        /* 近景山（深色、低高度） */
+        .mountain-range-front {
+            position: absolute;
+            bottom: -4vh;
+            left: 0;
+            width: 200vw;
+            height: 20vh;
+            background: #8a7f6f;
+        }
+
+        /* ===== 水墨山脈：三層山 + 霧 ===== */
+
+        /* 遠處淡藍山脈 */
+        .ink-mountain-back {
+            position: absolute;
+            bottom: -10vh;
+            left: -10vw;
+            width: 140vw;
+            height: 55vh;
+            background: #c7d9e7;
+            clip-path: polygon(0% 80%, 5% 65%, 12% 70%, 18% 55%, 25% 60%,
+                    33% 50%, 42% 58%, 50% 40%, 60% 55%, 70% 48%,
+                    78% 60%, 88% 52%, 95% 65%, 100% 60%,
+                    100% 100%, 0% 100%);
+            opacity: 0.55;
+            filter: blur(1.5px);
+        }
+
+        /* 中景灰山脈 */
+        .ink-mountain-mid {
+            position: absolute;
+            bottom: -8vh;
+            left: -10vw;
+            width: 140vw;
+            height: 45vh;
+            background: #b8c0c7;
+            clip-path: polygon(0% 85%, 6% 70%, 15% 75%, 24% 62%, 32% 68%,
+                    41% 58%, 52% 64%, 61% 55%, 72% 63%, 82% 57%,
+                    92% 68%, 100% 62%, 100% 100%, 0% 100%);
+            opacity: 0.7;
+            filter: blur(1px);
+        }
+
+        /* 前景深山剪影 */
+        .ink-mountain-front {
+            position: absolute;
+            bottom: -6vh;
+            left: -10vw;
+            width: 140vw;
+            height: 35vh;
+            background: #9f968a;
+            clip-path: polygon(0% 90%, 8% 78%, 18% 82%, 28% 72%, 40% 78%,
+                    52% 70%, 64% 80%, 76% 72%, 88% 82%, 100% 76%,
+                    100% 100%, 0% 100%);
+            opacity: 0.9;
+        }
+
+        /* 山腰白霧 */
+        .ink-mountain-fog {
+            position: absolute;
+            bottom: 10vh;
+            left: -10vw;
+            width: 140vw;
+            height: 20vh;
+            background:
+                radial-gradient(circle at 15% 100%, rgba(255, 255, 255, 0.9), transparent 60%),
+                radial-gradient(circle at 45% 110%, rgba(255, 255, 255, 0.9), transparent 60%),
+                radial-gradient(circle at 80% 95%, rgba(255, 255, 255, 0.9), transparent 60%);
+            opacity: 0.85;
+            filter: blur(4px);
+        }
+
+        /* ===============================
+   建築 Hover 放大 + 上升 效果
+   =============================== */
+        .temple-left-wrapper,
+        .gate,
+        .spirit-pool-wrapper,
+        .shop-wrapper {
+            transition: transform 0.28s ease-out, filter 0.28s ease-out;
+            transform-origin: center bottom;
+        }
+
+        /* 滑鼠移上去：微微放大 + 上升 */
+        .temple-left-wrapper:hover,
+        .gate:hover,
+        .spirit-pool-wrapper:hover,
+        .shop-wrapper:hover {
+            transform: translateX(-50%) scale(1.04);
+            filter: brightness(1.08);
+        }
+
+        /* 匾額亮一點 */
+        .temple-left-wrapper:hover .building-sign,
+        .gate:hover .building-sign,
+        .spirit-pool-wrapper:hover .building-sign,
+        .shop-wrapper:hover .building-sign {
+            filter: brightness(1.18);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="scene">
+
+        <div class="mountain-range-back"></div>
+        <div class="mountain-range-mid"></div>
+        <div class="mountain-range-front"></div>
+
+        <!-- 遠方山脈 -->
+        <div class="bg-mountain left"></div>
+        <div class="bg-mountain right"></div>
+
+        <div class="ink-mountain-back"></div>
+        <div class="ink-mountain-mid"></div>
+        <div class="ink-mountain-front"></div>
+        <div class="ink-mountain-fog"></div>
+
+        <!-- 飄動雲霧 -->
+        <div class="cloud c1"></div>
+        <div class="cloud small c2"></div>
+        <div class="cloud small c3"></div>
+        <div class="cloud c4"></div>
+
+        <!-- 中景山 -->
+        <div class="bg-mountain mid" style="left:18vw; bottom:-8vh;"></div>
+        <div class="bg-mountain mid" style="right:20vw; bottom:-6vh;"></div>
+
+        <!-- 小山峰 -->
+        <div class="bg-mountain small-peak" style="left:35vw; bottom:-4vh;"></div>
+        <div class="bg-mountain small-peak" style="right:34vw; bottom:-5vh;"></div>
+
+        <!-- 左側懸浮島：功法閣 -->
+        <div class="floating-island island-left">
+            <div class="temple-left-wrapper" onclick="goBook()">
+                <div class="building-sign">功法閣</div>
+                <div class="temple-base"></div>
+                <div class="temple-pillars">
+                    <div class="temple-pillar"></div>
+                    <div class="temple-pillar"></div>
+                    <div class="temple-pillar"></div>
+                    <div class="temple-pillar"></div>
+                </div>
+                <div class="temple-door"></div>
+                <div class="temple-roof r1"></div>
+                <div class="temple-roof r2"></div>
+                <div class="temple-roof r3"></div>
+                <div class="lantern-row">
+                    <div class="lantern"></div>
+                    <div class="lantern"></div>
+                    <div class="lantern"></div>
+                </div>
+                <div class="temple-top-tower"></div>
+            </div>
+        </div>
+
+        <!-- 中央懸浮島：榮譽堂 -->
+        <div class="floating-island island-mid">
+            <!-- ⭐ 這裡加 onclick="goHonor()" ⭐ -->
+            <div class="gate" onclick="goHonor()">
+                <div class="building-sign">榮譽堂</div>
+                <div class="gate-base"></div>
+                <div class="gate-column left"></div>
+                <div class="gate-column right"></div>
+                <div class="gate-top"></div>
+                <div class="gate-wing left"></div>
+                <div class="gate-wing right"></div>
+                <div class="gate-crest"></div>
+                <div class="gate-crest-inner"></div>
+                <div class="gate-ring"></div>
+            </div>
+        </div>
+
+        <!-- 右側懸浮島：仙靈池 -->
+        <div class="floating-island island-right">
+            <div class="spirit-pool-wrapper" onclick="goPool()">
+                <div class="building-sign">仙靈池</div>
+                <div class="pool-base"></div>
+                <div class="pool-ring"></div>
+                <div class="pool-water">
+                    <div class="pool-ripple"></div>
+                </div>
+                <div class="spirit-pillar">
+                    <div class="spirit-ring"></div>
+                    <div class="spirit-flame"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右中：藏寶閣 -->
+        <div class="floating-island island-shop">
+            <div class="shop-wrapper" onclick="openShop()">
+                <div class="building-sign">藏寶閣</div>
+                <div class="shop-roof"></div>
+                <div class="shop-body">
+                    <div class="shop-sign-text"
+                        style="color:#ffca28; font-weight:bold; font-size:24px; background:#3e2723; padding:4px; border:1px solid #ffca28;">
+                        寶</div>
+                </div>
+                <div class="shop-base"></div>
+            </div>
+        </div>
+
+        <!-- 左中：貢獻堂 (新增) -->
+        <div class="floating-island island-left"
+            style="bottom: 22vh; left: 28%; transform: translateX(-50%); z-index: 5;">
+            <div class="shop-wrapper" onclick="openContribHall()">
+                <div class="building-sign">貢獻堂</div>
+                <!-- 屋頂換個顏色 (青色/灰色) -->
+                <div class="shop-roof"
+                    style="background: linear-gradient(to bottom, #cfd8dc 0%, #90a4ae 100%); box-shadow: 0 4px 0 #546e7a, 0 8px 8px rgba(0,0,0,0.4);">
+                </div>
+                <div class="shop-body" style="background: #5d4037; border-color: #3e2723;">
+                    <div class="shop-sign-text"
+                        style="color:#eceff1; font-weight:bold; font-size:24px; background:#455a64; padding:4px; border:1px solid #cfd8dc;">
+                        賞</div>
+                </div>
+                <div class="shop-base"></div>
+            </div>
+        </div>
+
+        <!-- 右上角 LOGO 風格字樣 -->
+        <div class="logo">
+            <span class="red">修</span>
+            仙宗門
+            <div id="faction-info-panel" style="
+                writing-mode: horizontal-tb; 
+                direction: ltr;
+                font-size: 14px; 
+                margin-top: 10px; 
+                color: #5d4037;
+                background: rgba(255, 255, 255, 0.6);
+                padding: 8px 12px;
+                border-radius: 6px;
+                border: 1px solid #d7ccc8;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                align-items: flex-start;
+                min-width: 120px;
+            ">
+                <div
+                    style="font-weight: bold; color: #3e2723; border-bottom: 1px solid #a1887f; padding-bottom: 2px; width: 100%;">
+                    <span id="f-name">無門無派</span>
+                </div>
+                <div>位階：<span id="f-rank">無</span></div>
+                <div>位階：<span id="f-rank">無</span></div>
+                <div>貢獻：<span id="f-contrib" style="color: #d84315; font-weight: bold;">0</span></div>
+                <div>靈石：<span id="f-stones" style="color: #1976d2; font-weight: bold;">0</span></div>
+            </div>
+        </div>
+    </div>
+    <!-- 商店模態框 -->
+    <div id="shop-modal" class="modal-overlay"
+        style="display: none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:100; justify-content:center; align-items:center;">
+        <div class="modal-content"
+            style="width: 1200px; max-width:98%; background:#fff3e0; padding:20px; border-radius:8px; border:2px solid #5d4037; position:relative; max-height:90vh; display:flex; flex-direction:column;">
+            <h2 style="text-align: center; color: #5d4037; margin-bottom: 20px;">宗門藏寶閣</h2>
+            <div style="text-align: right; margin-bottom: 10px; color: #5d4037; font-weight: bold;">
+                當前貢獻：<span id="shop-contrib-display">0</span>
+            </div>
+
+            <div id="shop-items-container" style="flex: 1; overflow-y: auto; overflow-x: hidden;">
+                <!-- 商品列表 -->
+            </div>
+
+            <button onclick="closeModal('shop-modal')"
+                style="margin-top: 20px; width: 100%; padding: 10px; background: #8d6e63; color: white; border: none; border-radius: 4px; cursor: pointer;">離開</button>
+        </div>
+    </div>
+    <!-- 貢獻堂模態框 -->
+    <div id="contrib-modal" class="modal-overlay"
+        style="display: none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:100; justify-content:center; align-items:center;">
+        <div class="modal-content"
+            style="width: 600px; max-width:90%; background:#eceff1; padding:20px; border-radius:8px; border:2px solid #37474f; position:relative; overflow:hidden;">
+            <h2 style="text-align: center; color: #37474f; margin-bottom: 20px;">宗門貢獻堂</h2>
+
+            <div class="tabs" style="display:flex; justify-content:center; gap:10px; margin-bottom:15px;">
+                <button onclick="switchContribTab('bounty')" id="tab-bounty"
+                    style="padding:8px 16px; cursor:pointer; background:#546e7a; color:white; border:none; border-radius:4px;">懸賞任務</button>
+                <button onclick="switchContribTab('minigame')" id="tab-minigame"
+                    style="padding:8px 16px; cursor:pointer; background:#90a4ae; color:white; border:none; border-radius:4px;">休閒娛樂</button>
+            </div>
+
+            <!-- 懸賞區域 -->
+            <div id="contrib-section-bounty" style="max-height: 400px; overflow-y: auto;">
+                <div id="bounty-list" style="display:grid; gap:10px;"></div>
+            </div>
+
+            <!-- 小遊戲區域 -->
+            <div id="contrib-section-minigame" style="display:none; text-align:center;">
+                <h3>宗門小遊戲</h3>
+                <p>輕鬆一下，賺取微薄的貢獻或靈石。</p>
+
+                <div style="margin-top:20px; display:flex; flex-direction:column; gap:15px;">
+                    <!-- 猜大小 -->
+                    <div style="background:#fff; padding:10px; border-radius:4px; border:1px solid #cfd8dc;">
+                        <h4>🎲 靈石賭坊 (猜大小)</h4>
+                        <div style="margin-bottom:8px; font-size:12px; color:#666;">
+                            下注靈石：
+                            <input type="number" id="gamble-bet" value="10" min="10" style="width:60px; padding:2px;"
+                                oninput="validateGambleBet()">
+                            <span id="gamble-error"
+                                style="color:red; font-size:12px; display:none; margin-left:5px;">不足</span>
+                            (贏了翻倍)
+                        </div>
+                        <div style="margin-top:10px;">
+                            <button onclick="playGamble('low')"
+                                style="padding:5px 15px; background:#e57373; color:white; border:none; border-radius:4px; margin-right:5px;">押小
+                                (1-3)</button>
+                            <button onclick="playGamble('high')"
+                                style="padding:5px 15px; background:#64b5f6; color:white; border:none; border-radius:4px;">押大
+                                (4-6)</button>
+                        </div>
+                        <div id="gamble-result" style="margin-top:5px; font-weight:bold; height:20px;"></div>
+                    </div>
+
+                    <!-- 猜拳 -->
+                    <div style="background:#fff; padding:10px; border-radius:4px; border:1px solid #cfd8dc;">
+                        <h4>✌️ 與長老猜拳</h4>
+                        <div style="margin-bottom:8px; font-size:12px; color:#666;">
+                            下注貢獻：
+                            <input type="number" id="rps-bet" value="10" min="10" style="width:60px; padding:2px;"
+                                oninput="validateRPSBet()">
+                            <span id="rps-error"
+                                style="color:red; font-size:12px; display:none; margin-left:5px;">不足</span>
+                            (贏了翻倍)
+                        </div>
+                        <div style="margin-top:10px;">
+                            <button onclick="playRPS(0)"
+                                style="font-size:20px; padding:5px 15px; cursor:pointer;">✂️</button>
+                            <button onclick="playRPS(1)"
+                                style="font-size:20px; padding:5px 15px; cursor:pointer;">✊</button>
+                            <button onclick="playRPS(2)"
+                                style="font-size:20px; padding:5px 15px; cursor:pointer;">🖐️</button>
+                        </div>
+                        <div id="rps-result" style="margin-top:5px; font-weight:bold; height:20px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="closeModal('contrib-modal')"
+                style="margin-top: 20px; width: 100%; padding: 10px; background: #37474f; color: white; border: none; border-radius: 4px; cursor: pointer;">離開</button>
+        </div>
+    </div>
+</body>
+<!-- 3. Load Contribution Logic -->
+<script src="contribution.js"></script>
+<script>
+    // 商品列表定義 (Sect Shop items)
+    const SectShopList = [
+        // === 四藝典籍 (青雲宗/魔雲殿 專屬) ===
+        { id: "alchemy_manual", price: 2000, maxBuy: 1, desc: "習得煉丹術", allowedFactions: ['qingyun', 'moyun'] },
+        { id: "weapon_manual", price: 2000, maxBuy: 1, desc: "習得煉器術", allowedFactions: ['qingyun', 'moyun'] },
+        { id: "formation_manual", price: 2000, maxBuy: 1, desc: "習得陣法術", allowedFactions: ['qingyun', 'moyun'] },
+        { id: "talisman_manual", price: 2000, maxBuy: 1, desc: "習得符籙術", allowedFactions: ['qingyun', 'moyun'] },
+
+        // ==========================================
+        // 1. 丹塔專屬 (煉丹) + 青雲/魔雲 (白綠藍)
+        // ==========================================
+        // --- 凡階 (White) ---
+        { id: "pill_white_1", price: 40, desc: "凝血草 (白階)", allowedFactions: ['danta', 'qingyun', 'moyun'] },
+        { id: "pill_white_2", price: 40, desc: "活氣果 (白階)", allowedFactions: ['danta', 'qingyun', 'moyun'] },
+        { id: "pill_white_3", price: 40, desc: "清晨露 (白階)", allowedFactions: ['danta', 'qingyun', 'moyun'] },
+        { id: "pill_white_4", price: 40, desc: "伴妖草 (白階)", allowedFactions: ['danta', 'qingyun', 'moyun'] },
+        { id: "pill_white_5", price: 40, desc: "乾枯樹根 (白階)", allowedFactions: ['danta', 'qingyun', 'moyun'] },
+        // --- 黃階 (Green) ---
+        { id: "pill_green_1", price: 160, desc: "靈芝 (綠階)", allowedFactions: ['danta', 'qingyun', 'moyun'] },
+        { id: "pill_green_2", price: 160, desc: "血蓮 (綠階)", allowedFactions: ['danta', 'qingyun', 'moyun'] },
+        { id: "pill_green_3", price: 160, desc: "寒冰草 (綠階)", allowedFactions: ['danta', 'qingyun', 'moyun'] },
+        { id: "pill_green_4", price: 160, desc: "烈焰果 (綠階)", allowedFactions: ['danta', 'qingyun', 'moyun'] },
+        { id: "pill_green_5", price: 160, desc: "清風藤 (綠階)", allowedFactions: ['danta', 'qingyun', 'moyun'] },
+        // --- 玄階 (Blue) ---
+        { id: "pill_blue_1", price: 640, desc: "龍血草 (藍階)", allowedFactions: ['danta', 'qingyun', 'moyun'] },
+        { id: "pill_blue_2", price: 640, desc: "星光露 (藍階)", allowedFactions: ['danta', 'qingyun', 'moyun'] },
+        { id: "pill_blue_3", price: 640, desc: "紫猴花 (藍階)", allowedFactions: ['danta', 'qingyun', 'moyun'] },
+        { id: "pill_blue_4", price: 640, desc: "天靈果 (藍階)", allowedFactions: ['danta', 'qingyun', 'moyun'] },
+        { id: "pill_blue_5", price: 640, desc: "金銀花 (藍階)", allowedFactions: ['danta', 'qingyun', 'moyun'] },
+        // --- 地階 (Purple) ---
+        { id: "pill_purple_1", price: 3200, desc: "千年人參 (紫階)", allowedFactions: ['danta'] },
+        { id: "pill_purple_2", price: 3200, desc: "九曲靈芝 (紫階)", allowedFactions: ['danta'] },
+        { id: "pill_purple_3", price: 3200, desc: "涅槃果 (紫階)", allowedFactions: ['danta'] },
+        { id: "pill_purple_4", price: 3200, desc: "天山雪蓮 (紫階)", allowedFactions: ['danta'] },
+        { id: "pill_purple_5", price: 3200, desc: "五行靈根 (紫階)", allowedFactions: ['danta'] },
+
+        // ==========================================
+        // 2. 器閣專屬 (煉器) + 青雲/魔雲 (白綠藍)
+        // ==========================================
+        // --- 凡階 (White) ---
+        { id: "weapon_white_1", price: 40, desc: "鐵礦石 (白階)", allowedFactions: ['qige', 'qingyun', 'moyun'] },
+        { id: "weapon_white_2", price: 40, desc: "銅塊 (白階)", allowedFactions: ['qige', 'qingyun', 'moyun'] },
+        { id: "weapon_white_3", price: 40, desc: "獸骨 (白階)", allowedFactions: ['qige', 'qingyun', 'moyun'] },
+        { id: "weapon_white_4", price: 40, desc: "細沙 (白階)", allowedFactions: ['qige', 'qingyun', 'moyun'] },
+        { id: "weapon_white_5", price: 40, desc: "杉木 (白階)", allowedFactions: ['qige', 'qingyun', 'moyun'] },
+        // --- 黃階 (Green) ---
+        { id: "weapon_green_1", price: 160, desc: "玄鐵 (綠階)", allowedFactions: ['qige', 'qingyun', 'moyun'] },
+        { id: "weapon_green_2", price: 160, desc: "赤銅 (綠階)", allowedFactions: ['qige', 'qingyun', 'moyun'] },
+        { id: "weapon_green_3", price: 160, desc: "妖狼牙 (綠階)", allowedFactions: ['qige', 'qingyun', 'moyun'] },
+        { id: "weapon_green_4", price: 160, desc: "黑曜石 (綠階)", allowedFactions: ['qige', 'qingyun', 'moyun'] },
+        { id: "weapon_green_5", price: 160, desc: "鐵木 (綠階)", allowedFactions: ['qige', 'qingyun', 'moyun'] },
+        // --- 玄階 (Blue) ---
+        { id: "weapon_blue_1", price: 640, desc: "寒鐵礦 (藍階)", allowedFactions: ['qige', 'qingyun', 'moyun'] },
+        { id: "weapon_blue_2", price: 640, desc: "秘銀 (藍階)", allowedFactions: ['qige', 'qingyun', 'moyun'] },
+        { id: "weapon_blue_3", price: 640, desc: "金剛石 (藍階)", allowedFactions: ['qige', 'qingyun', 'moyun'] },
+        { id: "weapon_blue_4", price: 640, desc: "紫檀木 (藍階)", allowedFactions: ['qige', 'qingyun', 'moyun'] },
+        { id: "weapon_blue_5", price: 640, desc: "巨獸骨 (藍階)", allowedFactions: ['qige', 'qingyun', 'moyun'] },
+        // --- 地階 (Purple) ---
+        { id: "weapon_purple_1", price: 3200, desc: "庚金菁英 (紫階)", allowedFactions: ['qige'] },
+        { id: "weapon_purple_2", price: 3200, desc: "萬年玄冰 (紫階)", allowedFactions: ['qige'] },
+        { id: "weapon_purple_3", price: 3200, desc: "鳳凰骨 (紫階)", allowedFactions: ['qige'] },
+        { id: "weapon_purple_4", price: 3200, desc: "星辰砂 (紫階)", allowedFactions: ['qige'] },
+        { id: "weapon_purple_5", price: 3200, desc: "雷擊神木 (紫階)", allowedFactions: ['qige'] },
+
+        // ==========================================
+        // 3. 符盟專屬 (符籙) + 青雲/魔雲 (白綠藍)
+        // ==========================================
+        // --- 凡階 (White) ---
+        { id: "talisman_white_1", price: 40, desc: "黃紙 (白階)", allowedFactions: ['fumeng', 'qingyun', 'moyun'] },
+        { id: "talisman_white_2", price: 40, desc: "墨汁 (白階)", allowedFactions: ['fumeng', 'qingyun', 'moyun'] },
+        { id: "talisman_white_3", price: 40, desc: "硃砂粉 (白階)", allowedFactions: ['fumeng', 'qingyun', 'moyun'] },
+        { id: "talisman_white_4", price: 40, desc: "狼毫筆 (白階)", allowedFactions: ['fumeng', 'qingyun', 'moyun'] },
+        { id: "talisman_white_5", price: 40, desc: "清水 (白階)", allowedFactions: ['fumeng', 'qingyun', 'moyun'] },
+        // --- 黃階 (Green) ---
+        { id: "talisman_green_1", price: 160, desc: "靈符紙 (綠階)", allowedFactions: ['fumeng', 'qingyun', 'moyun'] },
+        { id: "talisman_green_2", price: 160, desc: "靈墨 (綠階)", allowedFactions: ['fumeng', 'qingyun', 'moyun'] },
+        { id: "talisman_green_3", price: 160, desc: "精純硃砂 (綠階)", allowedFactions: ['fumeng', 'qingyun', 'moyun'] },
+        { id: "talisman_green_4", price: 160, desc: "桃木塊 (綠階)", allowedFactions: ['fumeng', 'qingyun', 'moyun'] },
+        { id: "talisman_green_5", price: 160, desc: "獸血 (綠階)", allowedFactions: ['fumeng', 'qingyun', 'moyun'] },
+        // --- 玄階 (Blue) ---
+        { id: "talisman_blue_1", price: 640, desc: "金粉 (藍階)", allowedFactions: ['fumeng', 'qingyun', 'moyun'] },
+        { id: "talisman_blue_2", price: 640, desc: "妖狐血 (藍階)", allowedFactions: ['fumeng', 'qingyun', 'moyun'] },
+        { id: "talisman_blue_3", price: 640, desc: "雷擊木心 (藍階)", allowedFactions: ['fumeng', 'qingyun', 'moyun'] },
+        { id: "talisman_blue_4", price: 640, desc: "玉符胚 (藍階)", allowedFactions: ['fumeng', 'qingyun', 'moyun'] },
+        { id: "talisman_blue_5", price: 640, desc: "星光墨 (藍階)", allowedFactions: ['fumeng', 'qingyun', 'moyun'] },
+        // --- 地階 (Purple) ---
+        { id: "talisman_purple_1", price: 3200, desc: "金篆玉冊 (紫階)", allowedFactions: ['fumeng'] },
+        { id: "talisman_purple_2", price: 3200, desc: "蛟龍血 (紫階)", allowedFactions: ['fumeng'] },
+        { id: "talisman_purple_3", price: 3200, desc: "天蠶絲帛 (紫階)", allowedFactions: ['fumeng'] },
+        { id: "talisman_purple_4", price: 3200, desc: "虛空墨 (紫階)", allowedFactions: ['fumeng'] },
+        { id: "talisman_purple_5", price: 3200, desc: "聖人筆毫 (紫階)", allowedFactions: ['fumeng'] },
+
+        // ==========================================
+        // 4. 陣殿專屬 (陣法) + 青雲/魔雲 (白綠藍)
+        // ==========================================
+        // --- 凡階 (White) ---
+        { id: "formation_white_1", price: 40, desc: "石子 (白階)", allowedFactions: ['zhendian', 'qingyun', 'moyun'] },
+        { id: "formation_white_2", price: 40, desc: "木樁 (白階)", allowedFactions: ['zhendian', 'qingyun', 'moyun'] },
+        { id: "formation_white_3", price: 40, desc: "麻繩 (白階)", allowedFactions: ['zhendian', 'qingyun', 'moyun'] },
+        { id: "formation_white_4", price: 40, desc: "砂土 (白階)", allowedFactions: ['zhendian', 'qingyun', 'moyun'] },
+        { id: "formation_white_5", price: 40, desc: "木炭 (白階)", allowedFactions: ['zhendian', 'qingyun', 'moyun'] },
+        // --- 黃階 (Green) ---
+        { id: "formation_green_1", price: 160, desc: "靈陣盤 (綠階)", allowedFactions: ['zhendian', 'qingyun', 'moyun'] },
+        { id: "formation_green_2", price: 160, desc: "聚靈石 (綠階)", allowedFactions: ['zhendian', 'qingyun', 'moyun'] },
+        { id: "formation_green_3", price: 160, desc: "絲綢陣旗 (綠階)", allowedFactions: ['zhendian', 'qingyun', 'moyun'] },
+        { id: "formation_green_4", price: 160, desc: "銀線 (綠階)", allowedFactions: ['zhendian', 'qingyun', 'moyun'] },
+        { id: "formation_green_5", price: 160, desc: "玉樁 (綠階)", allowedFactions: ['zhendian', 'qingyun', 'moyun'] },
+        // --- 玄階 (Blue) ---
+        { id: "formation_blue_1", price: 640, desc: "星辰石 (藍階)", allowedFactions: ['zhendian', 'qingyun', 'moyun'] },
+        { id: "formation_blue_2", price: 640, desc: "五行旗 (藍階)", allowedFactions: ['zhendian', 'qingyun', 'moyun'] },
+        { id: "formation_blue_3", price: 640, desc: "陣盤核心 (藍階)", allowedFactions: ['zhendian', 'qingyun', 'moyun'] },
+        { id: "formation_blue_4", price: 640, desc: "空靈晶 (藍階)", allowedFactions: ['zhendian', 'qingyun', 'moyun'] },
+        { id: "formation_blue_5", price: 640, desc: "地脈引 (藍階)", allowedFactions: ['zhendian', 'qingyun', 'moyun'] },
+        // --- 地階 (Purple) ---
+        { id: "formation_purple_1", price: 3200, desc: "界石 (紫階)", allowedFactions: ['zhendian'] },
+        { id: "formation_purple_2", price: 3200, desc: "混沌石 (紫階)", allowedFactions: ['zhendian'] },
+        { id: "formation_purple_3", price: 3200, desc: "仙陣盤 (紫階)", allowedFactions: ['zhendian'] },
+        { id: "formation_purple_4", price: 3200, desc: "星核 (紫階)", allowedFactions: ['zhendian'] },
+        { id: "formation_purple_5", price: 3200, desc: "鎮龍樁 (紫階)", allowedFactions: ['zhendian'] },
+
+        // ==========================================
+        // 5. 通用商品 (目前無，這裡放套裝)
+        // ==========================================
+
+        // === 白色套裝 (通用) ===
+        { id: "cloth_hat", price: 40, desc: "布帽 (防禦+2, 生命+10)" },
+        { id: "cloth_robe", price: 50, desc: "布袍 (防禦+3, 生命+15)" },
+        { id: "cloth_pants", price: 40, desc: "布褲 (防禦+2, 生命+10)" },
+        { id: "cloth_shoes", price: 30, desc: "布鞋 (防禦+1, 速度+1)" },
+        { id: "iron_sword", price: 80, desc: "鐵劍 (攻擊+10)" },
+
+        // === 綠色套裝 (通用) ===
+        { id: "bronze_helm", price: 140, desc: "青銅盔 (防禦+8, 生命+35)" },
+        { id: "bronze_armor", price: 150, desc: "青銅甲 (防禦+12, 生命+50)" },
+        { id: "bronze_pants", price: 140, desc: "青銅護腿 (防禦+8, 生命+35)" },
+        { id: "bronze_boots", price: 130, desc: "青銅靴 (防禦+5, 速度+3)" },
+        { id: "bronze_sword", price: 150, desc: "青銅劍 (攻擊+15, 暴擊率+1%)" },
+
+        // === 藍色套裝 (各宗門通用) ===
+        { id: "mystic_helm", price: 340, desc: "玄鐵盔 (防禦+18, 生命+80)", allowedFactions: ['qingyun', 'moyun', 'danta', 'qige', 'fumeng', 'zhendian'] },
+        { id: "mystic_armor", price: 350, desc: "玄鐵甲 (防禦+27, 生命+120)", allowedFactions: ['qingyun', 'moyun', 'danta', 'qige', 'fumeng', 'zhendian'] },
+        { id: "mystic_pants", price: 340, desc: "玄鐵護腿 (防禦+18, 生命+80)", allowedFactions: ['qingyun', 'moyun', 'danta', 'qige', 'fumeng', 'zhendian'] },
+        { id: "mystic_boots", price: 330, desc: "玄鐵靴 (防禦+12, 速度+6)", allowedFactions: ['qingyun', 'moyun', 'danta', 'qige', 'fumeng', 'zhendian'] },
+        { id: "mystic_sword", price: 350, desc: "玄鐵劍 (攻擊+30)", allowedFactions: ['qingyun', 'moyun', 'danta', 'qige', 'fumeng', 'zhendian'] },
+    ];
+
+    function openShop() {
+        const modal = document.getElementById('shop-modal');
+        const container = document.getElementById('shop-items-container');
+        const contribDisplay = document.getElementById('shop-contrib-display');
+
+        if (!modal || !container) return;
+
+        // Access parent state safely
+        const state = (window.parent && window.parent.gameState) || window.gameState;
+        const contrib = state ? (state.factionContrib || 0) : 0;
+        const currentFaction = state ? (state.faction || 'none') : 'none';
+
+        if (contribDisplay) contribDisplay.textContent = contrib;
+
+        container.innerHTML = '';
+
+        // 定義分類
+        const categories = [
+            // Index logic: 
+            // Manuals: 0-4
+            // Danta: 4-24
+            // Qige: 24-44
+            // Fumeng: 44-64
+            // Zhendian: 64-84
+            // Sets: 84+
+            { title: '📚 四藝典籍', start: 0, end: 4 },
+            { title: '🧪 煉丹資源', start: 4, end: 24 },
+            { title: '⚒️ 煉器資源', start: 24, end: 44 },
+            { title: '📜 符籙資源', start: 44, end: 64 },
+            { title: '⚡ 陣法資源', start: 64, end: 84 },
+
+            { title: '⚪ 白色套裝', start: 84, end: 89 },
+            { title: '🟢 綠色套裝', start: 89, end: 94 },
+            { title: '🔵 藍色套裝', start: 94, end: 99 }
+        ];
+
+        let itemIndex = 0;
+        let anyVisibleCategory = false;
+
+        categories.forEach((category, catIndex) => {
+            // Check if any items in this category are available for the current faction
+            let hasVisibleItems = false;
+            for (let i = category.start; i < category.end && i < SectShopList.length; i++) {
+                const item = SectShopList[i];
+                if (!item.allowedFactions || item.allowedFactions.includes(currentFaction)) {
+                    hasVisibleItems = true;
+                    break;
+                }
+            }
+
+            if (!hasVisibleItems) return; // Skip empty categories
+            anyVisibleCategory = true;
+
+            // 分類標題 (可折疊)
+            const header = document.createElement('div');
+            const isExpanded = true;
+            header.style.cssText = 'font-size: 15px; font-weight: bold; color: #5d4037; padding: 10px 8px; margin-top: ' + (itemIndex === 0 ? '0' : '12px') + '; border-bottom: 2px solid #8d6e63; cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to right, rgba(141,110,99,0.1), transparent);';
+            header.innerHTML = `
+                <span>${category.title}</span>
+                <span class="collapse-icon" style="font-size: 12px; transition: transform 0.3s;">▼</span>
+            `;
+
+            // 網格容器
+            const grid = document.createElement('div');
+            grid.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; padding: 8px 0; transition: all 0.3s;';
+
+            // 點擊折疊/展開
+            header.onclick = () => {
+                const icon = header.querySelector('.collapse-icon');
+                if (grid.style.display === 'none') {
+                    grid.style.display = 'grid';
+                    icon.style.transform = 'rotate(0deg)';
+                } else {
+                    grid.style.display = 'none';
+                    icon.style.transform = 'rotate(-90deg)';
+                }
+            };
+
+            container.appendChild(header);
+
+            // 渲染商品
+            for (let i = category.start; i < category.end && i < SectShopList.length; i++) {
+                const itemConfig = SectShopList[i];
+                itemIndex++;
+
+                // Faction Filter Logic
+                if (itemConfig.allowedFactions && !itemConfig.allowedFactions.includes(currentFaction)) {
+                    continue;
+                }
+
+                // Check both ItemDB and MATERIAL_DB
+                let itemDef = null;
+                if (window.parent && window.parent.ItemDB) {
+                    itemDef = window.parent.ItemDB[itemConfig.id];
+                }
+                if (!itemDef && window.parent && window.parent.MATERIAL_DB) {
+                    itemDef = window.parent.MATERIAL_DB[itemConfig.id];
+                }
+
+                const name = itemDef ? itemDef.name : itemConfig.id;
+                // Simple color fallback
+                let color = '#333';
+                if (itemDef) {
+                    switch (itemDef.rarity) {
+                        case 'purple': color = '#9c27b0'; break;
+                        case 'blue': color = '#2196f3'; break;
+                        case 'green': color = '#4caf50'; break;
+                        case 'orange': color = '#ff9800'; break;
+                    }
+                }
+
+                const div = document.createElement('div');
+                div.style.cssText = 'border: 2px solid ' + color + '; padding: 8px; border-radius: 6px; background: white; display: flex; flex-direction: column; min-height: 90px; transition: all 0.2s; cursor: pointer;';
+                div.onmouseenter = () => { div.style.transform = 'translateY(-2px)'; div.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)'; };
+                div.onmouseleave = () => { div.style.transform = 'none'; div.style.boxShadow = 'none'; };
+
+                div.innerHTML = `
+                    <div style="font-weight: bold; color: ${color}; margin-bottom: 4px; font-size: 13px;">${name}</div>
+                    ${itemDef && itemDef.image ? `<div style="width: 100%; height: 120px; background: url('${itemDef.image}') no-repeat center center; background-size: contain; border-radius: 4px; margin-bottom: 6px; border: 1px solid ${color}; background-color: rgba(0,0,0,0.5);"></div>` : ''}
+                    <div style="font-size: 11px; color: #666; margin-bottom: auto; line-height: 1.3;">${itemConfig.desc}</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                        <span style="color: #d84315; font-weight: bold; font-size: 12px;">💰${itemConfig.price}</span>
+                        <button onclick="buySectItem('${itemConfig.id}', ${itemConfig.price})" 
+                            style="padding: 5px 10px; background: linear-gradient(135deg, #8d6e63, #6d4c41); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;">
+                            兌換
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(div);
+            }
+            container.appendChild(grid);
+        });
+
+        if (!anyVisibleCategory) {
+            container.innerHTML = '<div style="text-align:center; padding:20px; color:#555;">此宗門暫無可兌換的寶物。</div>';
+        }
+
+        modal.style.display = 'flex';
+    }
+
+    function buySectItem(itemId, price) {
+        const state = (window.parent && window.parent.state) || window.state;
+        if (!state) return;
+
+        // 檢查限購
+        const itemConfig = SectShopList.find(item => item.id === itemId);
+        if (itemConfig && itemConfig.maxBuy) {
+            // 初始化購買記錄
+            if (!state.shopPurchases) state.shopPurchases = {};
+            const purchased = state.shopPurchases[itemId] || 0;
+
+            if (purchased >= itemConfig.maxBuy) {
+                alert(`此物品已達購買上限(${itemConfig.maxBuy}次)！`);
+                return;
+            }
+        }
+
+        if ((state.factionContrib || 0) < price) {
+            alert("宗門貢獻不足！");
+            return;
+        }
+
+        // 扣除貢獻
+        state.factionContrib -= price;
+
+        // 記錄購買
+        if (itemConfig && itemConfig.maxBuy) {
+            if (!state.shopPurchases) state.shopPurchases = {};
+            state.shopPurchases[itemId] = (state.shopPurchases[itemId] || 0) + 1;
+        }
+
+        // 添加物品
+        if (window.parent && window.parent.addItem) {
+            window.parent.addItem(itemId, 1);
+        } else {
+            console.error("Cannot find addItem function in parent window");
+            alert("購買失敗：系統錯誤");
+            return;
+        }
+
+        alert(`兌換成功！`);
+        openShop(); // 刷新顯示
+
+        // 同步UI
+        if (window.parent.renderUI) window.parent.renderUI();
+        updateFactionUI(); // Update local display
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+
+    // ===== 貢獻堂邏輯 =====
+    function openContribHall() {
+        const modal = document.getElementById('contrib-modal');
+        if (modal) modal.style.display = 'flex';
+
+        // 強制切換到懸賞分頁
+        switchContribTab('bounty');
+
+        if (!window.ContributionHall) {
+            console.error("ContributionHall module missing!");
+            alert("系統錯誤：懸賞模組未載入，請刷新頁面重試。");
+            return;
+        }
+        renderBountyList();
+    }
+
+    function switchContribTab(tab) {
+        document.getElementById('contrib-section-bounty').style.display = (tab === 'bounty') ? 'block' : 'none';
+        document.getElementById('contrib-section-minigame').style.display = (tab === 'minigame') ? 'block' : 'none';
+
+        document.getElementById('tab-bounty').style.background = (tab === 'bounty') ? '#546e7a' : '#90a4ae';
+        document.getElementById('tab-minigame').style.background = (tab === 'minigame') ? '#546e7a' : '#90a4ae';
+    }
+
+    function renderBountyList() {
+        // Access state properly to check completion
+        const pWin = window.parent || window;
+        const state = pWin.gameState || pWin.state || window.state;
+
+        const container = document.getElementById('bounty-list');
+        if (!container || !window.ContributionHall) return;
+
+        container.innerHTML = '';
+        window.ContributionHall.bosses.forEach(boss => {
+            const div = document.createElement('div');
+            div.style.background = '#fff';
+            div.style.padding = '10px';
+            div.style.border = '1px solid #cfd8dc';
+            div.style.borderRadius = '4px';
+            div.style.display = 'flex';
+            div.style.justifyContent = 'space-between';
+            div.style.alignItems = 'center';
+
+            // Calculate Approximate Real CP based on stats formula
+            // New formula based on nerfed stats (HP*12, Atk*1, Def*0.2)
+            // Approx weight: 12*0.8 + 1*5 + 0.2*3 = 9.6 + 5 + 0.6 = ~15.2
+            // Base CP = Power * 15 + Crit/Luck offset (~50)
+            const realCP = Math.floor(boss.power * 15 + 50);
+
+            const isCompleted = state && state.completedChallenges && state.completedChallenges.includes(boss.id);
+            const btnHtml = isCompleted
+                ? `<button disabled style="padding:6px 12px; background:#78909c; color:#eceff1; border:none; border-radius:4px; cursor:not-allowed;">已完成</button>`
+                : `<button onclick="ContributionHall.challengeBoss('${boss.id}')" style="padding:6px 12px; background:#bf360c; color:white; border:none; border-radius:4px; cursor:pointer;">挑戰</button>`;
+
+            div.innerHTML = `
+                <div>
+                    <div style="font-weight:bold; color:${isCompleted ? '#78909c' : '#d84315'};">${boss.name}</div>
+                    <div style="font-size:12px; color:#546e7a;">${boss.desc}</div>
+                    <div style="font-size:12px; margin-top:4px;">
+                        <span>戰力: ${realCP}</span> | 
+                        <span style="color:${isCompleted ? '#90a4ae' : '#2e7d32'};">獎勵: ${boss.rewardStones} 靈石, ${boss.rewardContrib} 貢獻, ${boss.rewardRep} 聲望</span>
+                    </div>
+                </div>
+                ${btnHtml}
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    // DEBUG WRAPPER
+    function debugChallenge(bossId) {
+        alert("Debug: Button Clicked! Boss ID: " + bossId);
+        if (window.ContributionHall) {
+            window.ContributionHall.challengeBoss(bossId);
+        } else {
+            alert("Error: ContributionHall object not found!");
+        }
+    }
+
+    // === 戰鬥返回處理 (Battle Return Handler) ===
+    (function checkBattleReturn() {
+        // Wait for DOM and Scripts
+        setTimeout(() => {
+            const battleReturn = localStorage.getItem("battle-return-to");
+            if (battleReturn === "contribution") {
+                console.log("Returning from contribution battle...");
+
+                const resultRaw = localStorage.getItem("battle-result");
+                if (resultRaw) {
+                    try {
+                        const result = JSON.parse(resultRaw);
+                        const bossId = result.bossId;
+
+                        if (result.win) {
+                            if (window.ContributionHall && window.ContributionHall.bosses) {
+                                const boss = window.ContributionHall.bosses.find(b => b.id === bossId);
+                                if (boss) {
+                                    const pWin = window.parent || window;
+
+                                    // CRITICAL FIX: Sync state from storage first!
+                                    // fighting.html might have saved new HP/Mana state. 
+                                    // If we don't load, our save() will be rejected due to timestamp conflict.
+                                    if (pWin.GameStateManager) {
+                                        pWin.GameStateManager.load();
+                                    }
+
+                                    const state = pWin.gameState || pWin.state || window.state;
+
+                                    if (state) {
+                                        // Initialize completed list logic
+                                        if (!state.completedChallenges) state.completedChallenges = [];
+
+                                        console.log(`[Faction] Processing battle return. BossID: ${bossId}, Completed: ${state.completedChallenges}`);
+
+                                        // Check if already completed
+                                        if (state.completedChallenges.includes(bossId)) {
+                                            setTimeout(() => {
+                                                alert(`【戰鬥捷報】\n擊敗了 ${boss.name}！\n(此挑战已完成，無法再次獲得獎勵)`);
+                                            }, 100);
+                                        } else {
+                                            // First time clear logic
+                                            state.completedChallenges.push(bossId);
+
+                                            // Delay alert slightly to allow UI to render
+                                            setTimeout(() => {
+                                                alert(`【戰鬥捷報】\n擊敗了 ${boss.name}！\n獲得 ${boss.rewardStones} 靈石, ${boss.rewardContrib} 貢獻, ${boss.rewardRep} 聲望。`);
+                                            }, 100);
+
+                                            // Awards
+                                            // Awards - Explicitly update state to avoid cross-window function issues or 'no faction' checks
+                                            state.factionContrib = (state.factionContrib || 0) + boss.rewardContrib;
+
+                                            // Add stones & Rep (Try accessing parent state)
+                                            state.spiritStones = (state.spiritStones || 0) + boss.rewardStones; // fixed prop name
+                                            state.factionRep = (state.factionRep || 0) + (boss.rewardRep || 0);
+
+                                            // Log it
+                                            if (pWin.addLog) {
+                                                pWin.addLog(`完成懸賞【${boss.name}】：靈石+${boss.rewardStones}, 貢獻+${boss.rewardContrib}, 聲望+${boss.rewardRep}`, "event");
+                                            }
+
+                                            // Update UI if available
+                                            if (pWin.updateResourceUI) pWin.updateResourceUI();
+                                            if (pWin.renderUI) pWin.renderUI();
+                                            if (window.updateFactionUI) window.updateFactionUI();
+
+                                            // Save
+                                            if (pWin.GameStateManager) pWin.GameStateManager.save();
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            setTimeout(() => {
+                                alert("【挑戰失敗】\n勝敗乃兵家常事，少俠請重新來過。");
+                            }, 100);
+                        }
+                    } catch (e) {
+                        console.error("Error parsing battle result", e);
+                    }
+
+                    localStorage.removeItem("battle-result");
+                }
+
+                localStorage.removeItem("battle-return-to");
+
+                // Re-open Hall
+                openContribHall();
+            }
+        }, 500); // 500ms delay to ensure everything is loaded
+    })();
+
+    function challengeBoss(bossId) {
+        const state = (window.parent && window.parent.state) || window.state;
+        const boss = window.ContributionHall.bosses.find(b => b.id === bossId);
+        if (!boss || !state) return;
+
+        // 簡單戰鬥計算
+        // 玩家戰力
+        let playerPower = 0;
+        if (typeof window.parent.calcBattlePower === 'function') {
+            playerPower = window.parent.calcBattlePower();
+        } else {
+            // fallback
+            playerPower = (state.attack * 2) + (state.defense * 2) + (state.hp / 10);
+        }
+
+        // 簡單判定：戰力 > 80% Boss 戰力就有機會贏，戰力 > Boss 必贏
+        // 加入隨機性
+        const winChance = Math.min(1.0, (playerPower / boss.power) * 0.8); // 稍微難一點
+        const roll = Math.random();
+
+        if (playerPower > boss.power || roll < winChance) {
+            // Win
+            if (window.parent.addFactionContrib) {
+                window.parent.addFactionContrib(boss.rewardContrib, `擊敗 ${boss.name}`);
+            }
+            if (window.parent.addResource) {
+                // Assuming addResource exists or modify state direclty
+                state.spiritStones += boss.rewardStones;
+                if (window.parent.addLog) window.parent.addLog(`獲得懸賞靈石：${boss.rewardStones}`, 'event');
+            } else {
+                state.spiritStones += boss.rewardStones;
+            }
+
+            alert(`戰勝了 ${boss.name}！\n獲得貢獻 ${boss.rewardContrib}，靈石 ${boss.rewardStones}`);
+        } else {
+            // Lose
+            const dmg = Math.floor(state.maxHp * 0.3);
+            state.hp -= dmg;
+            if (state.hp < 0) state.hp = 0;
+            if (window.parent.renderUI) window.parent.renderUI();
+
+            if (window.parent.addLog) window.parent.addLog(`挑戰 ${boss.name} 失敗，受了點輕傷 (HP -${dmg})`, 'bad-event');
+            alert(`如果不敵 ${boss.name}，狼狽逃回宗門...\n生命減少 ${dmg}`);
+        }
+
+        updateFactionUI();
+    }
+
+    function playGamble(choice) {
+        const state = (window.parent && window.parent.state) || window.state;
+        if (!state) {
+            console.error("State not found in playGamble");
+            alert("錯誤：找不到玩家數據");
+            return;
+        }
+
+        // Read bet amount from input
+        const inputEl = document.getElementById('gamble-bet');
+        let cost = 10;
+        if (inputEl) {
+            cost = parseInt(inputEl.value);
+        } else {
+            // Fallback for safety
+            cost = 10;
+        }
+
+        if (isNaN(cost) || cost < 10) {
+            alert("無效的下注金額，最少需要 10 靈石！");
+            return;
+        }
+
+        if ((state.spiritStones || 0) < cost) {
+            alert(`靈石不足！你需要 ${cost} 靈石 (當前: ${state.spiritStones || 0})`);
+            return;
+        }
+
+        // Deduct cost
+        state.spiritStones -= cost;
+
+        const gameRes = window.ContributionHall.gamble(null, choice);
+
+        const resDiv = document.getElementById('gamble-result');
+        if (gameRes.win) {
+            state.spiritStones += cost * 2;
+            resDiv.innerHTML = `<span style="color:green">${gameRes.msg} (+${cost}靈石)</span>`;
+            if (window.parent.addLog) window.parent.addLog(`賭坊贏錢：${cost}靈石`, 'event');
+        } else {
+            resDiv.innerHTML = `<span style="color:red">${gameRes.msg} (-${cost}靈石)</span>`;
+        }
+        updateFactionUI();
+        if (window.parent.renderUI) window.parent.renderUI();
+    }
+
+    function playRPS(myChoice) {
+        // 0: scissors, 1: rock, 2: paper
+        const state = (window.parent && window.parent.state) || window.state;
+        if (!state) return;
+
+        // Read bet amount
+        const inputEl = document.getElementById('rps-bet');
+        let cost = 10;
+        if (inputEl) {
+            cost = parseInt(inputEl.value);
+        }
+
+        if (isNaN(cost) || cost < 10) {
+            alert("無效的下注金額，最少需要 10 貢獻！");
+            return;
+        }
+
+        if ((state.factionContrib || 0) < cost) {
+            alert(`貢獻不足！你需要 ${cost} 貢獻 (當前: ${state.factionContrib || 0})`);
+            return;
+        }
+
+        // Deduct cost
+        state.factionContrib -= cost;
+
+        const res = window.ContributionHall.rps(myChoice);
+        const resDiv = document.getElementById('rps-result');
+
+        let color = '#333';
+        let txt = '';
+
+        if (res.result === 'win') {
+            color = 'green';
+            // Reward: Bet * 2
+            const reward = cost * 2;
+            state.factionContrib += reward;
+            txt = `長老出${res.elderChoiceName}，你贏了！ (+${cost}貢獻)`;
+            if (window.parent.addLog) window.parent.addLog(`猜拳獲勝：${cost}貢獻`, 'event');
+        } else if (res.result === 'lose') {
+            color = 'red';
+            txt = `長老出${res.elderChoiceName}，你輸了... (-${cost}貢獻)`;
+        } else {
+            color = '#fbc02d';
+            // Draw: Refund bet
+            state.factionContrib += cost;
+            txt = `長老出${res.elderChoiceName}，平手。 (退還下注)`;
+        }
+
+        resDiv.innerHTML = `<span style="color:${color}">${txt}</span>`;
+        updateFactionUI();
+    }
+
+    // 1. 同步與初始化
+    // 雖然 main.js 是父視窗，但 iframe 內的 JS 環境是獨立的。
+    // 這裡我們不需強制同步物件，因為大家現在都走 global vars + localStorage。
+    // 但為了確保顯示正確，我們嘗試從 parent 讀變數 (如果有的話) 或者 load。
+
+    // 如果 parent 已經載入 state.js 且有 globals，我們可以考慮直接讀 parent 的？
+    // 但為了簡單，讓 iframe 也跑自己的 state.js (已在 head 還是哪裡載入?)
+    // 檢查: faction.html 沒有載入 state.js!
+    // -> 如果沒有載入 state.js，那 iframe 裡根本沒有 GameStateManager。
+    // -> 必須確認 faction.html 是否有載入 state.js。
+    // 回頭看 lines 1-800，沒看到 script src="state.js"。
+    // 如果沒載入，那上面的 sync code 以前是怎麼跑的？
+    // "window.gameState = window.parent.gameState" -> 它直接用 parent 的物件。
+    // 現在 object 沒了，變數在 parent window 上。
+    // 所以 iframe 必須直接存取 parent.variable。
+    // 或者 iframe 自己載入 state.js。
+
+    // 檢查 line 954 下面的 code.
+    // 結論：faction.html 應該只是一個導航頁，不需要顯示數值？
+    // 它只顯示 "功法閣" "榮譽堂"。
+    // 所以其實不需要 state。
+    // 只要能跳轉就好。
+
+    // 刪除舊的 sync block，改為新的 updateUI
+    console.log("✅ Faction navigation loaded.");
+
+    function updateFactionUI() {
+        const state = (window.parent && window.parent.state) || window.state;
+        if (!state) return;
+
+        const fNameEl = document.getElementById('f-name');
+        const fRankEl = document.getElementById('f-rank');
+        const fContribEl = document.getElementById('f-contrib');
+        const fStonesEl = document.getElementById('f-stones'); // New
+
+        // Mapping faction IDs to Names (Simple check)
+        let factionName = "無門無派";
+        if (state.faction === 'qingyun') factionName = "青雲宗";
+        if (state.faction === 'moyun') factionName = "魔雲殿"; // Add missing
+        if (state.faction === 'danmeng') factionName = "丹盟"; // Add missing
+
+        if (fNameEl) fNameEl.textContent = factionName;
+        if (fRankEl) fRankEl.textContent = state.factionRank || "無";
+        if (fContribEl) fContribEl.textContent = state.factionContrib || 0;
+        if (fStonesEl) fStonesEl.textContent = state.spiritStones || 0;
+
+        // Run validation in case balance changed
+        validateGambleBet();
+        validateRPSBet();
+    }
+
+    // Call on load
+    window.addEventListener('load', updateFactionUI);
+    // Also try immediately in case load event missed
+    updateFactionUI();
+
+    function validateGambleBet() {
+        const state = (window.parent && window.parent.state) || window.state;
+        const input = document.getElementById('gamble-bet');
+        const error = document.getElementById('gamble-error');
+        if (!state || !input || !error) return;
+
+        const cost = parseInt(input.value) || 0;
+        const owned = state.spiritStones || 0;
+
+        if (cost > owned) {
+            error.style.display = 'inline';
+            error.textContent = `不足 (擁有: ${owned})`;
+        } else {
+            error.style.display = 'none';
+        }
+    }
+
+    function validateRPSBet() {
+        const state = (window.parent && window.parent.state) || window.state;
+        const input = document.getElementById('rps-bet');
+        const error = document.getElementById('rps-error');
+        if (!state || !input || !error) return;
+
+        const cost = parseInt(input.value) || 0;
+        const owned = state.factionContrib || 0;
+
+        if (cost > owned) {
+            error.style.display = 'inline';
+            error.textContent = `不足 (擁有: ${owned})`;
+        } else {
+            error.style.display = 'none';
+        }
+
+    }
+
+    // 2. 導航函式
+    function navigateTo(page) {
+        if (window.parent && window.parent.document) {
+            const frame = window.parent.document.getElementById("faction-frame");
+            if (frame) {
+                frame.src = page;
+                return;
+            }
+        }
+        window.location.href = page;
+    }
+
+    function goBook() {
+        navigateTo("skill-hall.html");
+    }
+
+    function goHonor() {
+        navigateTo("honor-hall.html");
+    }
+
+    function goPool() {
+        navigateTo("xianling-pool.html");
+    }
+
+    // 3. 雖然按鈕邏輯在 main.js，但這裡保留對 iframe 內部可能的返回按鈕處理 (如果有)
+    // 目前主要依賴 index.html 的懸浮按鈕
+</script>
+
+</html>

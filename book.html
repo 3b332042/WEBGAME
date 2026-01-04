@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>修仙房間場景 Demo</title>
+<style>
+    /* ⭐ 返回三選一場景按鈕（放在最上面） */
+.back-btn {
+    position: absolute;
+    top: 18px;
+    left: 26px;
+    padding: 6px 18px;
+    border-radius: 18px;
+    background: rgba(26, 18, 16, 0.78);
+    color: #f6e7c6;
+    border: 1px solid rgba(246, 231, 198, 0.85);
+    cursor: pointer;
+    font-size: 13px;
+    letter-spacing: 2px;
+    z-index: 9999;
+}
+.back-btn:hover {
+    background: rgba(40, 28, 24, 0.9);
+    box-shadow: 0 0 8px rgba(246, 231, 198, 0.7);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    height: 100vh;
+    font-family: "Microsoft JhengHei", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #f5e9d8;
+    background: radial-gradient(circle at top, #453a38 0, #151419 40%, #050509 100%);
+    overflow: hidden;
+}
+
+/* 整個場景容器 */
+.game-scene {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 10px 20px;
+    backdrop-filter: blur(3px);
+}
+
+/* ===== 上方功能列 ===== */
+.top-bar {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 16px;
+    background: linear-gradient(to right, rgba(10,10,14,0.9), rgba(40,30,30,0.9));
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.45);
+}
+
+.top-right-status {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-size: 14px;
+}
+
+.status-pill {
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 0 10px rgba(0,0,0,0.6);
+}
+
+.status-label {
+    margin-right: 6px;
+    opacity: 0.8;
+    font-size: 12px;
+}
+
+.status-value {
+    color: #ffec9a;
+    font-weight: 600;
+}
+
+/* ===== 中央房間 ===== */
+.room {
+    flex: 1;
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: 220px 1fr 220px;
+    gap: 14px;
+}
+
+/* 左側縱向選單 */
+.left-menu {
+    background: linear-gradient(to bottom, rgba(6,4,8,0.9), rgba(33,26,29,0.98));
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.55);
+    padding: 10px 10px 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+.left-menu-title {
+    font-size: 18px;
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding-bottom: 4px;
+}
+
+.menu-list {
+    margin-top: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.menu-item {
+    position: relative;
+    padding: 10px 12px;
+    background: rgba(18,18,22,0.9);
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.05);
+    cursor: pointer;
+    font-size: 14px;
+    letter-spacing: 1px;
+    transition: 0.18s;
+}
+
+.menu-item.active {
+    background: linear-gradient(to right, #4d3320, #72431f);
+    border-color: #f7d38b;
+    box-shadow: 0 0 10px rgba(255, 222, 150, 0.5);
+}
+
+.menu-item:hover:not(.active) {
+    background: rgba(40,30,30,0.9);
+    transform: translateX(2px);
+}
+
+.menu-item::before {
+    content: "";
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    width: 3px;
+    height: 60%;
+    transform: translateY(-50%);
+    border-radius: 999px;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(255,255,255,0));
+}
+
+/* 中央舞台區 */
+.stage {
+    position: relative;
+    background:
+        radial-gradient(circle at top, rgba(255,255,255,0.06) 0, transparent 55%),
+        linear-gradient(to bottom, rgba(12,10,12,0.95), rgba(8,7,12,0.98));
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow:
+        0 15px 40px rgba(0,0,0,0.8),
+        inset 0 0 40px rgba(0,0,0,0.5);
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 牆壁裝飾感（左右櫃子） */
+.stage::before,
+.stage::after {
+    content: "";
+    position: absolute;
+    top: 16%;
+    width: 26%;
+    height: 70%;
+    background: linear-gradient(to bottom, #281f23, #161118);
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 0 30px rgba(0,0,0,0.7);
+}
+
+.stage::before {
+    left: 5%;
+}
+
+.stage::after {
+    right: 5%;
+}
+
+/* 地板圓陣 */
+.stage-floor {
+    position: absolute;
+    bottom: 18px;
+    left: 50%;
+    width: 52%;
+    height: 26%;
+    transform: translateX(-50%);
+    background: radial-gradient(ellipse at center, #3b3a4b 0, #171520 60%, transparent 70%);
+    border-radius: 50%;
+    box-shadow:
+        0 -10px 25px rgba(0,0,0,0.9),
+        0 0 20px rgba(0,0,0,0.9);
+}
+
+.floor-ring {
+    position: absolute;
+    inset: 18%;
+    border-radius: 50%;
+    border: 2px solid rgba(196, 168, 120, 0.6);
+    box-shadow: 0 0 18px rgba(255,235,175,0.35);
+}
+
+.floor-core {
+    position: absolute;
+    inset: 35%;
+    border-radius: 50%;
+    background: radial-gradient(circle, #26233a 0, #151320 80%);
+}
+
+/* 小香爐 / 燭台 */
+.floor-decoration {
+    position: absolute;
+    width: 60px;
+    height: 30px;
+    border-radius: 50%;
+    background: radial-gradient(circle at top, #f7d38b 0, #ad7b41 25%, #53361f 70%);
+    box-shadow: 0 0 12px rgba(255,230,150,0.8);
+}
+
+.floor-decoration::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: -12px;
+    width: 4px;
+    height: 16px;
+    transform: translateX(-50%);
+    border-radius: 999px;
+    background: linear-gradient(to top, rgba(255,255,255,0), rgba(255,244,202,0.9));
+    filter: blur(0.5px);
+}
+
+.floor-decoration.left {
+    left: 12%;
+    bottom: 36%;
+}
+
+.floor-decoration.right {
+    right: 12%;
+    bottom: 36%;
+}
+
+/* 角色卡片 */
+.character-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    z-index: 3;
+}
+
+.character-card {
+    width: 180px;
+    height: 280px;
+    background: linear-gradient(145deg, #302638, #18121f);
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.18);
+    box-shadow:
+        0 0 20px rgba(0,0,0,0.9),
+        0 0 25px rgba(162, 118, 255, 0.45);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.character-card::before {
+    content: "";
+    position: absolute;
+    inset: -30%;
+    background:
+        radial-gradient(circle at 0% 0%, rgba(255,255,255,0.08) 0, transparent 40%),
+        radial-gradient(circle at 100% 100%, rgba(153,100,255,0.2) 0, transparent 45%);
+    opacity: 0.8;
+    pointer-events: none;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    margin-bottom: 6px;
+    z-index: 1;
+}
+
+.card-name {
+    font-size: 15px;
+    letter-spacing: 1px;
+}
+
+.card-tag {
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.25);
+    font-size: 11px;
+}
+
+.card-portrait {
+    position: relative;
+    flex: 1;
+    border-radius: 10px;
+    overflow: hidden;
+    background: linear-gradient(to top, #3f2926, #f5e0b5);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+/* 用幾何圖形代替人物，可換成圖片 */
+.avatar-body {
+    width: 70px;
+    height: 90px;
+    border-radius: 40px 40px 10px 10px;
+    background: #fbe6b7;
+    position: relative;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.avatar-head {
+    position: absolute;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #ffe9c7;
+    top: -36px;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 8px rgba(0,0,0,0.35);
+}
+
+.avatar-hair {
+    position: absolute;
+    width: 60px;
+    height: 36px;
+    background: #2b2028;
+    border-radius: 50px 50px 40px 40px;
+    top: -44px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.avatar-robe {
+    position: absolute;
+    width: 100%;
+    height: 60%;
+    border-radius: 40px 40px 10px 10px;
+    background: linear-gradient(to bottom, #4a7f4f, #26412a);
+    bottom: 0;
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    z-index: 1;
+}
+
+.card-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.card-stat-label {
+    font-size: 11px;
+    opacity: 0.8;
+}
+
+.card-stat-value {
+    font-weight: 600;
+    color: #ffec9a;
+}
+
+.card-rarity {
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: linear-gradient(to right, #7b51e8, #b490ff);
+    font-size: 11px;
+    box-shadow: 0 0 12px rgba(173,133,255,0.8);
+}
+
+/* 底下按鈕 */
+.action-button {
+    margin-top: 4px;
+    padding: 6px 22px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(to right, #f5d28a, #f7c860);
+    color: #4a2b10;
+    font-weight: 600;
+    letter-spacing: 3px;
+    font-size: 14px;
+    box-shadow:
+        0 4px 18px rgba(0,0,0,0.8),
+        0 0 20px rgba(255,223,160,0.75);
+    transition: 0.15s;
+}
+
+.action-button:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 6px 22px rgba(0,0,0,0.95),
+        0 0 26px rgba(255,235,180,0.9);
+}
+
+/* 右側區塊：推薦心法、卷軸之類 */
+.right-panel {
+    background: linear-gradient(to bottom, rgba(6,4,8,0.9), rgba(33,26,29,0.98));
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.55);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.right-panel-title {
+    font-size: 16px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding-bottom: 4px;
+    letter-spacing: 2px;
+}
+
+.scroll-slot {
+    flex: 1;
+    border-radius: 10px;
+    border: 1px dashed rgba(255,255,255,0.20);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    font-size: 13px;
+    text-align: center;
+    padding: 8px;
+}
+
+.tip-text {
+    font-size: 12px;
+    opacity: 0.65;
+    margin-top: 4px;
+}
+
+/* 簡單做一點進場動畫感覺 */
+.character-card,
+.left-menu,
+.right-panel {
+    animation: fadeUp 0.5s ease-out;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 簡單響應式：螢幕太窄時改成上下排 */
+@media (max-width: 960px) {
+    .room {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+    }
+    .stage {
+        order: -1;
+    }
+}
+</style>
+</head>
+<body>
+<button class="back-btn" onclick="backToFaction()">返回宗門大殿</button>
+<div class="game-scene">
+    <!-- ===== 上方功能列 ===== -->
+    <div class="top-bar">
+        <div class="top-right-status">
+            <div class="status-pill">
+                <span class="status-label">貢獻</span>
+                <span class="status-value">95,447</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 中央房間區 ===== -->
+    <div class="room">
+        <!-- 左側選單（改成空容器，交給 JS 填） -->
+        <div class="left-menu">
+            <div class="left-menu-title">研習</div>
+            <div class="menu-list" id="bookMenuList">
+                <!-- 由 bookmain.js 動態生成 -->
+            </div>
+        </div>
+
+        <!-- 中央舞台 -->
+        <div class="stage">
+            <div class="stage-floor">
+                <div class="floor-ring"></div>
+                <div class="floor-core"></div>
+                <div class="floor-decoration left"></div>
+                <div class="floor-decoration right"></div>
+            </div>
+
+            <div class="character-wrapper">
+                <div class="character-card">
+                    <div class="card-header">
+                        <div class="card-name" id="cardName">青衣弟子</div>
+                        <div class="card-tag" id="cardTag">內門</div>
+                    </div>
+                    <div class="card-portrait">
+                        <div class="avatar-body">
+                            <div class="avatar-robe"></div>
+                            <div class="avatar-head"></div>
+                            <div class="avatar-hair"></div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="card-stat">
+                            <div class="card-stat-label">研習進度</div>
+                            <div class="card-stat-value" id="cardProgress">15 / 32 章</div>
+                        </div>
+                        <div class="card-rarity" id="cardRarity">紫品</div>
+                    </div>
+                </div>
+                <button class="action-button" id="actionBtn">開始研讀</button>
+            </div>
+        </div>
+
+        <!-- 右側面板 -->
+        <div class="right-panel">
+            <div class="right-panel-title" id="rightTitle">推薦秘卷</div>
+            <div class="scroll-slot" id="rightContent">
+                放一張卷軸卡片或其他 UI<br>（例如：本門心法、傳承法寶）
+            </div>
+            <div class="tip-text" id="rightTip">
+                小提示：這裡可以做成輪播、列表，或顯示當前研習獎勵。
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== JS：先 state，再 booklist，最後 bookmain ===== -->
+<script src="realms.js"></script>
+<script src="state.js"></script>
+<script src="faction.js"></script>
+<script src="booklist.js"></script>
+<script src="bookmain.js"></script>
+</body>
+</html>

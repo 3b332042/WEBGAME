@@ -1,0 +1,129 @@
+
+        function animateRedLotus(fightArea) {
+            const tint = document.createElement("div");
+            tint.className = "fire-tint";
+            fightArea.appendChild(tint);
+            setTimeout(() => tint.remove(), 5000);
+
+            const lotus = document.createElement("div");
+            lotus.className = "red-lotus lotus-anim";
+
+            for (let i = 0; i < 6; i++) {
+                const petal = document.createElement("div");
+                petal.className = "lotus-petal";
+                petal.style.transform = `rotate(${i * 60}deg)`;
+                lotus.appendChild(petal);
+            }
+            fightArea.appendChild(lotus);
+            setTimeout(() => lotus.remove(), 4500);
+        }
+
+        function animateDragonVortex(fightArea) {
+            const enemy = document.getElementById("enemy");
+            if (!enemy) return;
+            const eRect = enemy.getBoundingClientRect();
+            const aRect = fightArea.getBoundingClientRect();
+
+            const vortex = document.createElement("div");
+            vortex.className = "dragon-vortex vortex-anim";
+            
+            // Allow manual positioning relative to enemy or center
+            const vX = (eRect.left - aRect.left) + eRect.width / 2 - 150;
+            const vY = (eRect.top - aRect.top) + eRect.height / 2 - 150;
+            vortex.style.left = vX + "px";
+            vortex.style.top = vY + "px";
+            
+            fightArea.appendChild(vortex);
+            setTimeout(() => vortex.remove(), 3500);
+        }
+
+        function animateAncientTree(fightArea) {
+            const tree = document.createElement("div");
+            tree.className = "ancient-tree tree-anim";
+            fightArea.appendChild(tree);
+            setTimeout(() => tree.remove(), 5000);
+        }
+
+        function animateMeteorUlt(fightArea) {
+             const meteor = document.createElement("div");
+            meteor.className = "meteor-ult meteor-anim";
+            meteor.style.left = "40%";
+            meteor.style.top = "10%";
+
+            const trail = document.createElement("div");
+            trail.className = "meteor-trail";
+            meteor.appendChild(trail);
+
+            fightArea.appendChild(meteor);
+
+            setTimeout(() => {
+                const flash = document.createElement("div");
+                flash.className = "screen-flash";
+                fightArea.appendChild(flash);
+                setTimeout(() => flash.remove(), 500);
+                meteor.remove();
+                shakeBattle();
+            }, 1200);
+        }
+
+        function animateGoldCircle(fightArea) {
+            const enemy = document.getElementById("enemy");
+             if (!enemy) return;
+            const eRect = enemy.getBoundingClientRect();
+            const aRect = fightArea.getBoundingClientRect();
+
+            const circle = document.createElement("div");
+            circle.className = "gold-circle";
+            const cX = (eRect.left - aRect.left) + eRect.width / 2 - 110;
+            const cY = (eRect.top - aRect.top) + eRect.height / 2 - 110;
+            circle.style.left = cX + "px";
+            circle.style.top = cY + "px";
+            fightArea.appendChild(circle);
+            setTimeout(() => circle.remove(), 5000);
+
+            const swordCount = 8;
+            for (let i = 0; i < swordCount; i++) {
+                setTimeout(() => {
+                    spawnHomingSwordVisual(fightArea, eRect, aRect);
+                }, i * 200);
+            }
+        }
+
+        function spawnHomingSwordVisual(area, eRect, aRect) {
+            const sword = document.createElement("div");
+            sword.className = "sky-sword";
+
+            const startX = Math.random() * aRect.width;
+            const startY = -100;
+
+            const targetX = (eRect.left - aRect.left) + eRect.width / 2;
+            const targetY = (eRect.top - aRect.top) + eRect.height / 2;
+
+            const dx = targetX - startX;
+            const dy = targetY - startY;
+            const angleDeg = Math.atan2(dy, dx) * (180 / Math.PI);
+
+            sword.style.left = startX + "px";
+            sword.style.top = startY + "px";
+
+            sword.innerHTML = `
+    <div class="blade" style="background:linear-gradient(to bottom, #fff, #ffe082);"></div>
+    <div class="tip"></div>
+    <div class="guard" style="background:#ffb300;"></div>
+    <div class="handle"></div>
+    `;
+
+            sword.style.setProperty("--dx", dx + "px");
+            sword.style.setProperty("--dy", dy + "px");
+            sword.style.setProperty("--angle", (angleDeg + 90) + "deg");
+
+            area.appendChild(sword);
+
+            requestAnimationFrame(() => {
+                sword.classList.add("sword-shoot-anim");
+            });
+
+            setTimeout(() => {
+                sword.remove();
+            }, 600);
+        }

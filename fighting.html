@@ -1,0 +1,4469 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=960">
+    <title>平面戰鬥：五行大招 Demo（含暴擊）</title>
+
+    <style>
+        /* ===== 全局設定：修仙古風舞台 (Ancient Scroll / Dark Wood) ===== */
+        body {
+            margin: 0;
+            background-color: #1a1612;
+            /* 木紋/古紙質感 */
+            background-image:
+                repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.02) 0px, rgba(255, 255, 255, 0.02) 1px, transparent 1px, transparent 12px),
+                radial-gradient(circle at 50% 30%, #2c251d 0%, #15100a 60%, #080604 100%);
+            font-family: "Noto Serif TC", "Microsoft JhengHei", system-ui, sans-serif;
+            color: #f3e2bf;
+            overflow-y: auto;
+        }
+
+        /* 外框：紫檀木案卷風格 */
+        .battle-shell {
+            width: 960px;
+            margin: 32px auto 0;
+            padding: 20px 24px 28px;
+            border-radius: 8px;
+            /* 外邊框：木質 */
+            border: 4px solid #5a4632;
+            box-shadow:
+                0 0 0 2px #2b2015 inset,
+                /* 內嵌深色線 */
+                0 20px 50px rgba(0, 0, 0, 0.9),
+                /* 底部深陰影 */
+                0 5px 15px rgba(0, 0, 0, 0.5);
+            /* 案卷背景：深色宣紙/絲綢 */
+            background:
+                linear-gradient(to bottom, rgba(30, 25, 20, 0.95), rgba(40, 35, 30, 0.98)),
+                url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+');
+            position: relative;
+        }
+
+        /* 裝飾釘/角紋 (Pseudo-elements) */
+        .battle-shell::before,
+        .battle-shell::after {
+            content: "";
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #8e7c5d;
+            border-radius: 50%;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.8), inset 0 2px 3px rgba(255, 255, 255, 0.3);
+            top: 10px;
+        }
+
+        .battle-shell::before {
+            left: 10px;
+        }
+
+        .battle-shell::after {
+            right: 10px;
+        }
+
+        /* 標題條 */
+        .battle-title {
+            text-align: center;
+            letter-spacing: 6px;
+            font-size: 22px;
+            margin-bottom: 8px;
+            color: #ebdcb0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+            font-weight: bold;
+            border-bottom: 1px solid rgba(142, 124, 93, 0.3);
+            padding-bottom: 12px;
+            display: inline-block;
+            width: 100%;
+        }
+
+        /* 小副標 */
+        .battle-sub {
+            text-align: center;
+            font-size: 13px;
+            color: #a49378;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        /* ===== 戰鬥場景：演武石台 ===== */
+        .fight-area {
+            position: relative;
+            width: 800px;
+            height: 320px;
+            margin: 0 auto;
+            border-radius: 4px;
+            border: 2px solid #3e3326;
+            overflow: hidden;
+            /* 模擬石板地面透視 */
+            background: url('image/fight.png') no-repeat center 65%;
+            background-size: cover;
+            box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.8);
+        }
+
+        /* 地面網格/陣紋 (透視感) */
+        .game-floor {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 80px 40px;
+            transform: perspective(600px) rotateX(20deg) scale(1.2);
+            transform-origin: 50% 100%;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* 中央陣法印記 (Floor Seal) */
+        .array-seal {
+            position: absolute;
+            left: 50%;
+            top: 60%;
+            width: 360px;
+            height: 180px;
+            /* 扁平圓形，符合透視 */
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            border: 2px solid rgba(200, 210, 230, 0.1);
+            box-shadow: 0 0 40px rgba(150, 200, 255, 0.05);
+            pointer-events: none;
+        }
+
+        /* 角色：靈棋/符牌風格 */
+        .cube {
+            width: 64px;
+            height: 72px;
+            position: absolute;
+            top: 130px;
+            border-radius: 6px;
+            transition: 0.1s;
+            /* 像是一個直立的牌子 */
+            box-shadow:
+                0 10px 15px rgba(0, 0, 0, 0.6),
+                /* 影子 */
+                inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+                /* 邊緣高光 */
+                inset 0 -4px 10px rgba(0, 0, 0, 0.5);
+            /* 底部厚度感 */
+        }
+
+        /* 我方：青玉符牌 */
+        .player-cube {
+            left: 100px;
+            background: linear-gradient(135deg, #2c4c50, #16282b);
+            border: 1px solid #4d8285;
+        }
+
+        /* 內部發光符文 (Pseudo) */
+        .player-cube::before {
+            content: "道";
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: rgba(100, 220, 255, 0.4);
+            font-family: "KaiTi", "BiauKai", serif;
+            text-shadow: 0 0 10px rgba(100, 255, 255, 0.3);
+        }
+
+        /* 敵方：血煞符牌 */
+        .enemy-cube {
+            right: 100px;
+            background: linear-gradient(135deg, #502c2c, #2b1616);
+            border: 1px solid #854d4d;
+        }
+
+        .enemy-cube::before {
+            content: "敵";
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: rgba(255, 100, 100, 0.4);
+            font-family: "KaiTi", "BiauKai", serif;
+            text-shadow: 0 0 10px rgba(255, 50, 50, 0.3);
+        }
+
+        /* 足下底座 */
+        .cube::after {
+            content: "";
+            position: absolute;
+            left: 2px;
+            right: 2px;
+            bottom: -6px;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            filter: blur(4px);
+            z-index: -1;
+        }
+
+        /* 受傷閃爍 */
+        .hit {
+            animation: shakeRed 0.4s;
+            filter: brightness(2) sepia(1) hue-rotate(-50deg) saturate(5);
+        }
+
+        @keyframes shakeRed {
+            0% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-6px);
+            }
+
+            50% {
+                transform: translateX(6px);
+            }
+
+            75% {
+                transform: translateX(-6px);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        /* 治療閃爍 (Green) */
+        .healed {
+            animation: flashGreen 0.6s;
+        }
+
+        @keyframes flashGreen {
+            0% {
+                filter: brightness(1);
+            }
+
+            30% {
+                filter: brightness(1.5) sepia(1) hue-rotate(50deg) saturate(3);
+                box-shadow: 0 0 20px #4caf50;
+            }
+
+            100% {
+                filter: brightness(1);
+                box-shadow: none;
+            }
+        }
+
+        /* 凍結效果 (Frozen) */
+        .frozen {
+            filter: grayscale(0.5) brightness(1.2) sepia(1) hue-rotate(180deg) saturate(3) !important;
+            box-shadow: 0 0 15px #00e5ff;
+        }
+
+        /* 狀態文字 (HP / Damage) */
+        .hp-bar-container {
+            position: absolute;
+            top: -24px;
+            width: 100%;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #5a4632;
+            border-radius: 3px;
+        }
+
+        .hp-bar {
+            height: 100%;
+            background: #ff0000;
+            width: 100%;
+            transition: width 0.3s;
+        }
+
+        /* 玩家血條綠 */
+        #php {
+            background: #4caf50;
+        }
+
+        /* 血量文字顯示 */
+        .hp-text {
+            position: absolute;
+            text-align: center;
+            font-size: 13px;
+            font-weight: bold;
+            color: #f5e5b6;
+            text-shadow:
+                0 0 4px rgba(0, 0, 0, 0.8),
+                1px 1px 2px #000;
+            pointer-events: none;
+            z-index: 50;
+            letter-spacing: 0.5px;
+        }
+
+        /* ⭐ 戰技點條樣式 - 橙色 */
+        .sp-bar-container {
+            position: absolute;
+            top: -16px;
+            width: 100%;
+            height: 4px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #5a4632;
+            border-radius: 2px;
+        }
+
+        .sp-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ff9800, #ff5722);
+            width: 0%;
+            transition: width 0.3s;
+            box-shadow: 0 0 6px rgba(255, 152, 0, 0.8);
+        }
+
+        #psp {
+            background: linear-gradient(90deg, #ff9800, #ff5722) !important;
+            box-shadow: 0 0 6px rgba(255, 152, 0, 0.8);
+        }
+
+        /* ⭐ 能量條樣式 - 紫色 */
+        .energy-bar-container {
+            position: absolute;
+            top: -8px;
+            width: 100%;
+            height: 4px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #5a4632;
+            border-radius: 2px;
+        }
+
+        .energy-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #9c27b0, #e91e63);
+            width: 0%;
+            transition: width 0.3s;
+            box-shadow: 0 0 6px rgba(156, 39, 176, 0.8);
+        }
+
+        #penergy {
+            background: linear-gradient(90deg, #9c27b0, #e91e63) !important;
+            box-shadow: 0 0 6px rgba(156, 39, 176, 0.8);
+        }
+
+        /* 資源文字顯示 */
+        .sp-text,
+        .energy-text {
+            position: absolute;
+            text-align: center;
+            font-size: 11px;
+            font-weight: bold;
+            color: #f5e5b6;
+            text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+            pointer-events: none;
+            z-index: 50;
+        }
+
+
+        .damage {
+            position: absolute;
+            font-size: 20px;
+            font-weight: bold;
+            color: #ff5555;
+            text-shadow: 1px 1px 0 #000;
+            animation: floatUp 0.8s forwards;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .damage.heal {
+            color: #4caf50;
+        }
+
+        @keyframes floatUp {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-40px);
+            }
+        }
+
+        /* 震動螢幕 (Global Shake) */
+        .big-shake {
+            animation: screenShake 0.4s ease-out;
+        }
+
+        @keyframes screenShake {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            20% {
+                transform: translate(-3px, 3px);
+            }
+
+            40% {
+                transform: translate(3px, -3px);
+            }
+
+            60% {
+                transform: translate(-2px, 2px);
+            }
+
+            80% {
+                transform: translate(2px, -2px);
+            }
+
+            100% {
+                transform: translate(0, 0);
+            }
+        }
+
+        /* 螢幕白閃 */
+        .screen-flash {
+            position: absolute;
+            inset: 0;
+            background: white;
+            opacity: 0;
+            animation: flashFade 0.3s;
+            pointer-events: none;
+            z-index: 200;
+        }
+
+        @keyframes flashFade {
+            0% {
+                opacity: 0.8;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        /* ============================================ 
+           [普攻：斬擊] Moon Arc Slash
+           ============================================ */
+        .slash {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 50;
+        }
+
+        .slash .glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: transparent;
+            box-shadow: 20px -20px 0 0 #f0f8ff;
+            transform: translate(-60%, -40%) rotate(45deg);
+            filter: drop-shadow(0 0 10px rgba(200, 230, 255, 0.6)) drop-shadow(0 0 20px rgba(100, 180, 255, 0.4)) drop-shadow(0 0 30px rgba(100, 150, 255, 0.2));
+        }
+
+        @keyframes slash-move {
+            0% {
+                opacity: 0;
+                transform: translateX(-40px) scale(0.4) rotate(-30deg);
+                filter: brightness(2);
+            }
+
+            15% {
+                opacity: 1;
+                transform: translateX(0) scale(1) rotate(0deg);
+                filter: brightness(1.5);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateX(var(--travel)) scale(1.2) rotate(10deg);
+                filter: brightness(0.8);
+            }
+        }
+
+        .slash-animate {
+            animation: slash-move 0.45s cubic-bezier(0.1, 0.7, 0.1, 1) forwards;
+        }
+
+        /* --- 火：狐火 (Fox Fire) --- */
+        .fox-fire {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, #ae5959 10%, #ff0404 40%, #f68084 80%, transparent 100%);
+            border-radius: 50% 0 50% 50%;
+            transform: rotate(-45deg);
+            box-shadow: 0 0 20px rgba(225, 23, 23, 0.8);
+            filter: blur(1px);
+            opacity: 0;
+        }
+
+        .fox-fire::after {
+            content: "";
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            width: 20px;
+            height: 30px;
+            background: inherit;
+            border-radius: 50%;
+            filter: blur(4px);
+            opacity: 0.7;
+        }
+
+        @keyframes fox-move {
+            0% {
+                opacity: 0;
+                transform: translate(0, 0) rotate(-45deg) scale(0.5);
+            }
+
+            10% {
+                opacity: 1;
+                transform: translate(0, 0) rotate(-45deg) scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(var(--travel), -20px) rotate(0deg) scale(1.5);
+                filter: blur(4px);
+            }
+        }
+
+        .fox-fire-anim {
+            animation: fox-move 0.6s ease-out forwards;
+        }
+
+        /* 火大招：紅蓮業火 (Red Lotus) */
+        .red-lotus {
+            position: absolute;
+            width: 240px;
+            height: 240px;
+            opacity: 0;
+            pointer-events: none;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .lotus-petal {
+            position: absolute;
+            width: 60px;
+            height: 120px;
+            background: linear-gradient(to top, #fff 0%, #ff4d4d 50%, #540000 100%);
+            border-radius: 50% 50% 0 0;
+            left: 90px;
+            top: 60px;
+            opacity: 0.9;
+            transform-origin: 50% 100%;
+            box-shadow: 0 0 15px rgba(255, 50, 50, 0.6);
+            mix-blend-mode: screen;
+        }
+
+        @keyframes lotus-bloom {
+            0% {
+                transform: translate(-50%, -50%) scale(0) rotate(0deg);
+                opacity: 0;
+            }
+
+            20% {
+                transform: translate(-50%, -50%) scale(1) rotate(45deg);
+                opacity: 1;
+            }
+
+            80% {
+                transform: translate(-50%, -50%) scale(1.1) rotate(90deg);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1.5) rotate(180deg);
+                opacity: 0;
+            }
+        }
+
+        .lotus-anim {
+            animation: lotus-bloom 4s ease-out forwards;
+        }
+
+        /* --- 土：落石 (Rockfall) --- */
+        .rock-heavy {
+            position: absolute;
+            width: 50px;
+            height: 60px;
+            background: #5a4d41;
+            box-shadow:
+                inset 4px 4px 10px rgba(0, 0, 0, 0.6),
+                inset -2px -2px 5px rgba(255, 255, 255, 0.1);
+            clip-path: polygon(20% 0%, 80% 0%, 100% 40%, 85% 100%, 15% 100%, 0% 50%);
+            opacity: 0;
+            z-index: 10;
+        }
+
+        @keyframes rock-drop {
+            0% {
+                transform: translateY(-300px) scale(1.5);
+                opacity: 1;
+            }
+
+            70% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+
+            85% {
+                transform: translateY(-10px) scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(20px) scale(0.8);
+                opacity: 0;
+            }
+        }
+
+        .rock-anim {
+            animation: rock-drop 0.5s cubic-bezier(0.5, 0, 0.8, 1) forwards;
+        }
+
+        /* 土大招：隕星災變 (Meteor) */
+        .meteor-ult {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle at 30% 30%, #ffae42, #5a4d41);
+            border-radius: 50%;
+            box-shadow: 0 0 40px rgba(255, 100, 50, 0.6);
+            z-index: 20;
+            opacity: 0;
+        }
+
+        .meteor-trail {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 400px;
+            height: 100px;
+            background: linear-gradient(to right, rgba(255, 60, 0, 0.8), transparent);
+            transform: translate(-100%, -50%);
+            filter: blur(8px);
+            z-index: -1;
+        }
+
+        @keyframes meteor-fall {
+            0% {
+                transform: translate(300px, -300px) scale(0.5);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(-200px, 200px) scale(1.2);
+                opacity: 0;
+            }
+        }
+
+        .meteor-anim {
+            animation: meteor-fall 1.2s linear forwards;
+        }
+
+        /* --- 水：水靈流 (Aqua Stream) --- */
+        .aqua-stream {
+            position: absolute;
+            width: 60px;
+            height: 20px;
+            background: linear-gradient(90deg, transparent, rgba(150, 230, 255, 0.8), #fff);
+            border-radius: 20px;
+            filter: blur(2px);
+            opacity: 0;
+            box-shadow: 0 0 15px rgba(100, 200, 255, 0.8);
+        }
+
+        @keyframes aqua-move {
+            0% {
+                opacity: 0;
+                width: 20px;
+                transform: translateX(0);
+            }
+
+            20% {
+                opacity: 1;
+                width: 80px;
+            }
+
+            100% {
+                opacity: 0;
+                width: 10px;
+                transform: translateX(var(--travel));
+            }
+        }
+
+        .aqua-anim {
+            animation: aqua-move 0.4s linear forwards;
+        }
+
+        /* 水大招：蒼龍漩渦 (Dragon Vortex) */
+        .dragon-vortex {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            opacity: 0;
+            background: conic-gradient(from 0deg, transparent, rgba(50, 100, 255, 0.6), transparent 80%);
+            mask-image: radial-gradient(circle, transparent 30%, black 70%);
+            -webkit-mask-image: radial-gradient(circle, transparent 30%, black 70%);
+        }
+
+        @keyframes dragon-spin {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 0;
+            }
+
+            20% {
+                transform: scale(1) rotate(180deg);
+                opacity: 1;
+            }
+
+            80% {
+                transform: scale(1.2) rotate(1000deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(0.1) rotate(1200deg);
+                opacity: 0;
+            }
+        }
+
+        .vortex-anim {
+            animation: dragon-spin 3s ease-in-out forwards;
+        }
+
+        /* --- 木：翠靈葉 (Spirit Leaf) --- */
+        .spirit-leaf {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #aaffaa 0%, #00aa00 100%);
+            border-radius: 0 50% 0 50%;
+            box-shadow: 0 0 10px #aaffaa;
+            transform: rotate(45deg);
+            opacity: 0;
+        }
+
+        @keyframes leaf-rise {
+            0% {
+                transform: translateY(20px) rotate(0deg) scale(0.5);
+                opacity: 0;
+            }
+
+            30% {
+                transform: translateY(0) rotate(45deg) scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-50px) rotate(180deg) scale(0.8);
+                opacity: 0;
+            }
+        }
+
+        .leaf-anim {
+            animation: leaf-rise 1s ease-out forwards;
+        }
+
+        /* 木大招：古樹降臨 (Ancient Tree) */
+        .ancient-tree {
+            position: absolute;
+            bottom: -50px;
+            left: 50%;
+            width: 400px;
+            height: 400px;
+            transform: translateX(-50%);
+            background: linear-gradient(to top, #3e2723 0%, #2e7d32 60%, #a5d6a7 100%);
+            clip-path: polygon(45% 100%, 55% 100%, 60% 70%, 80% 50%, 50% 10%, 20% 50%, 40% 70%);
+            opacity: 0;
+            filter: drop-shadow(0 0 30px rgba(100, 255, 100, 0.6));
+        }
+
+        @keyframes tree-grow {
+            0% {
+                transform: translateX(-50%) scaleY(0);
+                opacity: 0;
+            }
+
+            20% {
+                transform: translateX(-50%) scaleY(1);
+                opacity: 0.8;
+            }
+
+            80% {
+                transform: translateX(-50%) scaleY(1.05);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translateX(-50%) scaleY(1.1);
+                opacity: 0;
+            }
+        }
+
+        .tree-anim {
+            animation: tree-grow 4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        /* --- 金：飛劍刺擊 (Sky Sword) --- */
+        .sky-sword {
+            position: absolute;
+            width: 18px;
+            height: 90px;
+            opacity: 0;
+            pointer-events: none;
+            transform-origin: center;
+            --dx: 0px;
+            --dy: 0px;
+            --angle: 90deg;
+        }
+
+        .sky-sword .blade {
+            position: absolute;
+            top: 12px;
+            left: 4px;
+            width: 10px;
+            height: 60px;
+            background: linear-gradient(to bottom, #fefefe, #dae6ff, #93a4e8);
+            box-shadow: 0 0 12px rgba(205, 215, 255, 0.95);
+            border-radius: 4px;
+        }
+
+        .sky-sword .tip {
+            position: absolute;
+            top: 0;
+            left: 1px;
+            width: 16px;
+            height: 18px;
+            background: linear-gradient(to bottom, #ffffff, #ced9ff);
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        }
+
+        .sky-sword .guard {
+            position: absolute;
+            top: 66px;
+            left: 0;
+            width: 18px;
+            height: 6px;
+            background: #c3a563;
+            box-shadow: 0 0 5px rgba(255, 228, 164, 0.9);
+            border-radius: 4px;
+        }
+
+        .sky-sword .handle {
+            position: absolute;
+            top: 72px;
+            left: 6px;
+            width: 6px;
+            height: 12px;
+            background: #7a5530;
+            border-radius: 3px;
+        }
+
+        @keyframes sword-shoot {
+            0% {
+                opacity: 0;
+                transform: translate(0, 0) rotate(var(--angle)) scale(0.9);
+                filter: blur(3px);
+            }
+
+            20% {
+                opacity: 1;
+                transform: translate(0, 0) rotate(var(--angle)) scale(1);
+                filter: blur(0);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(var(--dx), var(--dy)) rotate(var(--angle)) scale(1.05);
+                filter: blur(3px);
+            }
+        }
+
+        .sword-shoot-anim {
+            animation: sword-shoot 0.6s ease-out forwards;
+        }
+
+        /* 金大招：萬劍歸宗金色圓陣 */
+        .gold-circle {
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            border: 4px solid rgba(255, 230, 150, 0.9);
+            box-shadow: 0 0 35px rgba(255, 230, 150, 1);
+            opacity: 0;
+            animation: gold-circle-anim 5s ease-out forwards;
+        }
+
+        @keyframes gold-circle-anim {
+            0% {
+                transform: scale(0.2);
+                opacity: 0;
+            }
+
+            15% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            80% {
+                transform: scale(1.1);
+                opacity: 0.7;
+            }
+
+            100% {
+                transform: scale(1.3);
+                opacity: 0;
+            }
+        }
+
+        /* ===== 按鈕區 ===== */
+        .btn-row-title {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 14px;
+            color: #d2c4a4;
+            letter-spacing: 4px;
+            text-shadow: 0 2px 3px rgba(0, 0, 0, 0.8);
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .btn-row-title::before,
+        .btn-row-title::after {
+            content: "✦";
+            color: #8e7c5d;
+            margin: 0 10px;
+            font-size: 10px;
+            vertical-align: middle;
+        }
+
+        .btn-row {
+            margin-top: 8px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .btn {
+            position: relative;
+            padding: 8px 18px;
+            cursor: pointer;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+            background: #2b2520;
+            background-image:
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.2)),
+                repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0, 0, 0, 0.2) 2px, rgba(0, 0, 0, 0.2) 4px);
+            border: none;
+            color: #d8c8a8;
+            font-family: "Noto Serif TC", serif;
+            font-size: 14px;
+            letter-spacing: 1px;
+            transition: 0.1s;
+            box-shadow:
+                inset 0 0 0 1px rgba(180, 160, 120, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                0 4px 0 #1a1510,
+                0 6px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn:hover {
+            color: #fff;
+            background-color: #3e352e;
+            box-shadow:
+                inset 0 0 0 1px rgba(220, 200, 150, 0.6),
+                inset 0 0 10px rgba(220, 200, 150, 0.1),
+                0 4px 0 #1a1510,
+                0 6px 12px rgba(0, 0, 0, 0.6);
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(3px);
+            box-shadow:
+                inset 0 0 0 1px rgba(100, 90, 70, 0.3),
+                0 1px 0 #1a1510,
+                0 2px 2px rgba(0, 0, 0, 0.5) inset;
+            background-color: #221d19;
+        }
+
+        .btn-row:last-child .btn {
+            color: #f0d080;
+            box-shadow:
+                inset 0 0 0 1px rgba(240, 200, 100, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                0 4px 0 #2a2010,
+                0 6px 8px rgba(0, 0, 0, 0.6);
+        }
+
+        .btn-row:last-child .btn:hover {
+            color: #fff8d0;
+            box-shadow:
+                inset 0 0 0 1px rgba(255, 215, 100, 0.8),
+                inset 0 0 15px rgba(255, 200, 50, 0.15),
+                0 4px 0 #2a2010,
+                0 6px 15px rgba(255, 180, 0, 0.15);
+        }
+
+        .btn-row:last-child .btn:active {
+            transform: translateY(3px);
+            box-shadow:
+                inset 0 0 0 1px rgba(180, 150, 80, 0.3),
+                0 1px 0 #2a2010,
+                inset 0 2px 4px rgba(0, 0, 0, 0.6);
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #6d5c48;
+        }
+
+        /* ⭐ 大招按鈕特殊樣式 - 能量蓄積效果 */
+        .btn.ultimate-skill {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(180deg, #3a3020 0%, #2a2010 100%);
+        }
+
+        .btn.ultimate-skill .energy-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 0%;
+            background: linear-gradient(180deg, #ffd700 0%, #ff9800 50%, #666 100%);
+            transition: height 0.3s ease;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .btn.ultimate-skill span {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 能量滿時的特效 */
+        .btn.ultimate-skill.energy-full .energy-fill {
+            animation: energy-pulse 2s infinite;
+        }
+
+        @keyframes energy-pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        /* ===== 補上缺的特效樣式 ===== */
+
+        /* 火雨全場染色 */
+        .fire-tint {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 20%, rgba(255, 150, 80, 0.4), transparent 60%);
+            mix-blend-mode: screen;
+            opacity: 0;
+            pointer-events: none;
+            animation: fireTintFade 4s ease-out forwards;
+            z-index: 150;
+        }
+
+        @keyframes fireTintFade {
+            0% {
+                opacity: 0;
+            }
+
+            15% {
+                opacity: 0.7;
+            }
+
+            70% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        /* 爆炸效果 (火球 / 冰彈通用) */
+        .boom-effect,
+        .ice-explosion {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            opacity: 0;
+            z-index: 180;
+            animation: boomScale 0.4s ease-out forwards;
+        }
+
+        @keyframes boomScale {
+            0% {
+                transform: translate(-50%, -50%) scale(0.3);
+                opacity: 0;
+            }
+
+            30% {
+                transform: translate(-50%, -50%) scale(1.1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1.4);
+                opacity: 0;
+            }
+        }
+
+        /* 火爆炸顏色（會被 JS 改背景） */
+        .boom-effect {
+            background: radial-gradient(circle, #fff 0%, #ff5050 70%, transparent 100%);
+        }
+
+        /* 冰爆炸顏色 */
+        .ice-explosion.icon-boom {
+            background: radial-gradient(circle, #e0f7ff 0%, #40c4ff 60%, transparent 100%);
+            box-shadow: 0 0 20px rgba(64, 196, 255, 0.6);
+        }
+
+        /* 術法閃光動畫 */
+        @keyframes flashFade {
+            0% {
+                opacity: 0;
+            }
+
+            30% {
+                opacity: 0.8;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        /* ⭐ SP點數視覺化顯示 */
+        .sp-display-container {
+            position: relative;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            margin: 15px 0;
+            padding: 12px 20px;
+        }
+
+        .sp-point {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #ff9800, #ff5722);
+            transform: rotate(45deg);
+            box-shadow: 0 0 10px rgba(255, 152, 0, 0.6);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .sp-point::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            opacity: 0.3;
+        }
+
+        .sp-point.active {
+            background: linear-gradient(135deg, #ffd700, #ff9800);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.9), 0 0 25px rgba(255, 152, 0, 0.5);
+            animation: sp-pulse 1.5s infinite;
+        }
+
+        .sp-point.used {
+            background: linear-gradient(135deg, #666, #444);
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+            opacity: 0.4;
+        }
+
+        @keyframes sp-pulse {
+
+            0%,
+            100% {
+                transform: rotate(45deg) scale(1);
+            }
+
+            50% {
+                transform: rotate(45deg) scale(1.1);
+            }
+        }
+
+        .sp-label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
+            letter-spacing: 2px;
+            margin-right: 10px;
+        }
+
+        /* ⭐ 能量進度條顯示 */
+        .energy-bar-display {
+            position: relative;
+            margin: 15px 0;
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 2px solid rgba(156, 39, 176, 0.4);
+        }
+
+        .energy-bar-label {
+            font-size: 13px;
+            font-weight: bold;
+            color: #e91e63;
+            text-shadow: 0 0 8px rgba(233, 30, 99, 0.8);
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .energy-bar-container-custom {
+            position: relative;
+            width: 100%;
+            height: 20px;
+            background: linear-gradient(90deg, #1a1a1a, #2a2a2a);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(156, 39, 176, 0.6);
+        }
+
+        .energy-bar-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #9c27b0, #e91e63, #ffd700);
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px rgba(233, 30, 99, 0.6);
+        }
+
+        .energy-bar-fill.full {
+            animation: energy-bar-pulse 1.5s infinite;
+        }
+
+        @keyframes energy-bar-pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 10px rgba(233, 30, 99, 0.6);
+            }
+
+            50% {
+                box-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 30px rgba(233, 30, 99, 0.8);
+            }
+        }
+
+        .energy-bar-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+            z-index: 1;
+        }
+
+        /* ⭐ 大法術釋放按鈕 */
+        .ultimate-release-btn {
+            background: linear-gradient(180deg, #9c27b0, #7b1fa2);
+            border: 2px solid #e91e63;
+            color: #fff;
+            font-weight: bold;
+            padding: 12px 24px;
+            font-size: 14px;
+            box-shadow: 0 0 15px rgba(233, 30, 99, 0.6);
+            transition: all 0.3s ease;
+        }
+
+        .ultimate-release-btn:hover {
+            background: linear-gradient(180deg, #ad1457, #880e4f);
+            box-shadow: 0 0 25px rgba(233, 30, 99, 0.9);
+            transform: translateY(-2px);
+        }
+
+        .ultimate-release-btn:disabled {
+            background: linear-gradient(180deg, #424242, #212121);
+            border-color: #666;
+            color: #999;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        /* ⭐ SP進度條顯示 */
+        .sp-bar-display {
+            position: relative;
+            margin: 15px 0;
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 2px solid rgba(255, 152, 0, 0.4);
+        }
+
+        .sp-bar-label {
+            font-size: 13px;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .sp-bar-container-custom {
+            position: relative;
+            width: 100%;
+            height: 20px;
+            background: linear-gradient(90deg, #1a1a1a, #2a2a2a);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 152, 0, 0.6);
+        }
+
+        .sp-bar-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ff9800, #ffd700);
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px rgba(255, 152, 0, 0.6);
+        }
+
+        .sp-bar-fill.full {
+            animation: sp-bar-pulse 1.5s infinite;
+        }
+
+        @keyframes sp-bar-pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 10px rgba(255, 152, 0, 0.6);
+            }
+
+            50% {
+                box-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 30px rgba(255, 152, 0, 0.8);
+            }
+        }
+
+        .sp-bar-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+            z-index: 1;
+        }
+
+        /* ⭐ 戰技釋放按鈕 */
+        .skill-release-btn {
+            background: linear-gradient(180deg, #ff9800, #f57c00);
+            border: 2px solid #ffd700;
+            color: #fff;
+            font-weight: bold;
+            padding: 12px 24px;
+            font-size: 14px;
+            box-shadow: 0 0 15px rgba(255, 152, 0, 0.6);
+            transition: all 0.3s ease;
+        }
+
+        .skill-release-btn:hover {
+            background: linear-gradient(180deg, #fb8c00, #ef6c00);
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.9);
+            transform: translateY(-2px);
+        }
+
+        .skill-release-btn:disabled {
+            background: linear-gradient(180deg, #424242, #212121);
+            border-color: #666;
+            color: #999;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        /* ⭐ 狀態圖標容器 */
+        .effects-container {
+            position: absolute;
+            display: flex;
+            gap: 4px;
+            z-index: 60;
+            pointer-events: none;
+        }
+
+        .effect-icon {
+            font-size: 16px;
+            filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.8));
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            /* For absolute positioning of counter */
+        }
+
+        .effect-count {
+            position: absolute;
+            bottom: -2px;
+            right: -4px;
+            font-size: 10px;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="battle-shell">
+        <div class="battle-title">✦ 演武試煉 ✦</div>
+        <div class="fight-area">
+            <div class="game-floor"></div>
+            <div class="array-seal"></div>
+
+            <div class="cube player-cube" id="player"></div>
+            <div class="hp-bar-container" style="top: 100px; left: 90px; width: 80px;">
+                <div class="hp-bar" id="php"></div>
+                <!-- ⭐ 護盾條 (白色覆蓋) -->
+                <div class="shield-bar" id="pshield-bar"
+                    style="position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: rgba(255, 255, 255, 0.8); box-shadow: 0 0 5px #fff; transition: width 0.3s;">
+                </div>
+            </div>
+            <div class="hp-text" id="player-hp-text" style="top: 80px; left: 90px; width: 80px;">100/100</div>
+            <!-- ⭐ 護盾顯示 (黃色文字) -->
+            <div id="player-shield-text"
+                style="position:absolute; top:65px; left:90px; width:80px; text-align:center; color:#ffd700; font-size:12px; font-weight:bold; display:none; text-shadow:0 0 2px #000;">
+                (0)</div>
+
+            <!-- 能量條 -->
+            <div class="hp-bar-container" style="top: 120px; left: 90px; width: 80px;">
+                <div class="hp-bar" id="penergy" style="background: linear-gradient(90deg, #9c27b0, #e91e63);"></div>
+            </div>
+            <div class="hp-text" id="player-energy-text" style="top: 105px; left: 90px; width: 80px; color: #e91e63;">
+                0/100</div>
+
+            <div class="cube enemy-cube" id="enemy"></div>
+            <div class="hp-bar-container" style="top: 100px; right: 90px; width: 80px;">
+                <div class="hp-bar" id="ehp"></div>
+            </div>
+            <div class="hp-text" id="enemy-hp-text" style="top: 80px; right: 90px; width: 80px;">100/100</div>
+
+            <!-- ⭐ 狀態容器 (Enemy) -->
+            <div id="enemy-effects" class="effects-container"
+                style="top: 60px; right: 90px; justify-content: flex-end;"></div>
+
+
+            <div class="slash-css slash">
+                <div class="glow"></div>
+            </div>
+        </div>
+
+        <!-- ⭐ 战技点显示区 -->
+        <div class="sp-display-container" id="sp-display">
+            <div class="sp-label">战技点</div>
+            <div id="sp-points-visual" style="display: flex; gap: 8px;">
+                <!-- SP点数将由JS动态生成 -->
+            </div>
+        </div>
+
+
+        <!-- ⭐ 普攻按钮 -->
+        <div class="btn-row">
+            <button class="btn" onclick="slashAttack()">普通攻击</button>
+        </div>
+
+        <!-- ⭐ 五行術法區域 - 動態生成 -->
+        <div id="element-skills-section" style="display: none;">
+            <div class="btn-row-title">五行術法</div>
+            <div class="btn-row" id="element-skills-container" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <!-- 已學習的五行術法按鈕將由JS動態生成 -->
+            </div>
+        </div>
+
+        <!-- ⭐ 勢力術法區域 - 動態生成 -->
+        <div id="faction-skills-section" style="display: none;">
+            <div id="faction-skills-container">
+                <!-- 已學習的勢力術法按鈕將由JS動態生成 -->
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script src="state.js"></script>
+    <script src="items.js"></script>
+    <script src="materials.js"></script>
+    <script src="skills.js"></script>
+    <script src="BOSS.js"></script>
+    <script src="battle.js"></script>
+    <script src="ultimate_animations.js"></script>
+
+    <script>
+        // ======= 1. 戰鬥用角色：從 state.js 抓數值 =======
+        // ⭐ 重要：先確保載入存檔，再使用 gameState
+        window.stateLoaded = false;
+
+        // 安全存檔函式：只有在成功讀取後才允許存檔
+        window.safeSave = function () {
+            if (window.stateLoaded && typeof GameStateManager !== 'undefined') {
+                GameStateManager.save();
+            } else {
+                console.warn("Skipping save: State not loaded properly to prevent data loss.");
+            }
+        };
+
+        if (typeof GameStateManager !== 'undefined') {
+            // 檢查是否有存檔
+            const hasSave = localStorage.getItem("xiuxian-save");
+
+            // 嘗試載入
+            if (GameStateManager.load()) {
+                window.stateLoaded = true;
+                console.log("✅ GameState loaded from localStorage");
+                console.log("Loaded Attack:", window.state.attack);
+            } else if (!hasSave) {
+                // 如果完全沒有存檔（新遊戲），允許存檔
+                console.log("New game detected (no save). saving allowed.");
+                window.stateLoaded = true;
+            } else {
+                // 有存檔但讀取失敗 -> 禁止存檔以免覆蓋
+                console.error("❌ FAILED to load GameState! Save disabled.");
+                window.stateLoaded = false;
+                alert("讀檔失敗！存檔可能已損壞或是格式不符。\n為保護您的進度，本場戰鬥將不予記錄。\n請回到主畫面檢查。");
+            }
+        } else {
+            console.warn("⚠️ GameStateManager not found!");
+        }
+
+        // ⭐ 根據學習狀態顯示/隱藏技能按鈕
+        function updateSkillButtons() {
+            const learned = window.state?.learnedSkills || {};
+            const section = document.getElementById('element-skills-section');
+            const elementSkillsContainer = document.getElementById('element-skills-container');
+
+            if (!section || !elementSkillsContainer) return;
+
+            // 清空現有按鈕
+            elementSkillsContainer.innerHTML = '';
+
+            // 獲取玩家靈根
+            const roots = window.state?.rootElements || [];
+
+            // 遍歷所有技能，顯示已學習且靈根匹配的
+            let hasSkills = false;
+            for (const skillId in learned) {
+                const skill = window.SKILLS?.[skillId];
+                if (!skill) continue;
+
+                // 只顯示五行技能（有element屬性且無faction屬性）
+                if (skill.element && !skill.faction) {
+                    // 檢查靈根是否匹配
+                    if (roots.includes(skill.element)) {
+                        hasSkills = true;
+
+                        // 創建技能按鈕
+                        const btn = document.createElement('button');
+                        btn.className = 'btn';
+                        btn.textContent = skill.name;
+                        btn.onclick = () => useFiveElementSkill(skillId);
+
+                        elementSkillsContainer.appendChild(btn);
+                    }
+                }
+            }
+
+            // 顯示/隱藏section
+            if (hasSkills) {
+                section.style.display = 'block';
+            } else {
+                section.style.display = 'none';
+            }
+        }
+
+        // ⭐ 使用五行技能
+        function useFiveElementSkill(skillId) {
+            if (!checkTurn()) return;
+            if (!checkLearned(skillId)) return;
+
+            const skill = window.SKILLS[skillId];
+            if (!skill) return;
+
+            // ⭐ 根據技能類型檢查資源
+            if (skill.type === 'ultimate') {
+                // 大招消耗能量
+                if (!checkEnergy(ENERGY_COST_ULTIMATE)) return;
+            } else {
+                // 小技能消耗SP
+                if (!checkSP(skillId)) return;
+            }
+
+            // ⭐ 只有小技能消耗回合
+            if (skill.type !== 'ultimate') {
+                endPlayerTurn();
+            }
+
+            // 播放技能動畫
+            if (typeof playSkillAnimation === 'function') {
+                playSkillAnimation(skill);
+            }
+
+            // 計算傷害
+            const { dmg, isCrit } = getSkillDamage(skill.baseDamage || 1.0, skill.element, skillId);
+
+            // 根據技能類型設置不同的延遲時間
+            // 大招需要等待動畫播放完畢(約4秒),小技能只需300ms
+            const damageDelay = skill.type === 'ultimate' ? 4000 : 300;
+
+            // 播放動畫並造成傷害
+            isBattleAnimating = true; // 鎖定
+            updateTurnUI(); // 更新按鈕狀態
+
+            setTimeout(() => {
+                isBattleAnimating = false; // 解鎖
+                updateTurnUI(); // 恢復按鈕狀態
+
+                damageEnemy(dmg, isCrit);
+
+                // 如果有治療效果
+                if (skill.baseHeal) {
+                    const healAmount = Math.floor(skill.baseHeal * (1 + (window.getProficiencyBonus?.(window.state.learnedSkills[skillId] || 0) || 0)));
+                    healPlayer(healAmount);
+                }
+
+                // 如果有護盾效果
+                if (skill.shieldAmount) {
+                    const shieldAmount = Math.floor(skill.shieldAmount * (1 + (window.getProficiencyBonus?.(window.state.learnedSkills[skillId] || 0) || 0)));
+                    healPlayer(shieldAmount); // 簡化：用治療代替護盾
+                }
+
+                // 如果有凍結效果
+                if (skill.freezeChance && Math.random() < skill.freezeChance) {
+                    isEnemyFrozen = true;
+                    const enemy = document.getElementById("enemy");
+
+                    // ⭐ 添加雪花圖標
+                    const effectContainer = document.getElementById('enemy-effects');
+                    if (effectContainer) {
+                        // 檢查是否已有雪花，避免重複
+                        if (!effectContainer.querySelector('.freeze-icon')) {
+                            const icon = document.createElement('div');
+                            icon.className = 'effect-icon freeze-icon';
+                            icon.textContent = '❄️';
+                            effectContainer.appendChild(icon);
+                        }
+                    }
+
+                    if (enemy) {
+                        // 添加藍色冰凍效果 - 強制覆蓋
+                        enemy.dataset.originalBg = enemy.style.background || window.getComputedStyle(enemy).background;
+                        enemy.dataset.originalBorder = enemy.style.borderColor || window.getComputedStyle(enemy).borderColor;
+
+                        // 使用CSS變量或直接修改樣式
+                        enemy.style.cssText += `
+                            background: linear-gradient(135deg, #1e3a5f, #0d1f3a) !important;
+                            border-color: #4dabf7 !important;
+                            box-shadow: 0 0 20px #00e5ff !important;
+                            filter: brightness(0.8) hue-rotate(180deg) saturate(200%) !important;
+                            transition: all 0.3s;
+                        `;
+
+                        const r = enemy.getBoundingClientRect();
+                        showDamage(r.left + 20, r.top - 60, "凍結!", false, false);
+                        const dmgText = document.querySelector(".damage:last-child");
+                        if (dmgText && dmgText.textContent === "-凍結!") {
+                            dmgText.style.color = "#00e5ff";
+                            dmgText.style.textShadow = "0 0 10px #00e5ff";
+                        }
+                    }
+                }
+            }, damageDelay);
+        }
+
+        // ⭐ 渲染勢力術法按鈕
+        function renderFactionSkills() {
+            const faction = window.state?.faction || "";
+            const learned = window.state?.learnedSkills || {};
+
+            const factionSection = document.getElementById('faction-skills-section');
+            const factionContainer = document.getElementById('faction-skills-container');
+            const elementSection = document.getElementById('element-skills-section');
+
+            if (!factionSection || !factionContainer || !elementSection) return;
+
+            // 如果沒有加入勢力,隱藏勢力術法,顯示五行術法
+            if (!faction) {
+                factionSection.style.display = 'none';
+                updateSkillButtons(); // 更新五行術法顯示
+                return;
+            }
+
+            // 獲取該勢力的已學術法
+            const factionSkills = [];
+            for (const skillId in learned) {
+                const skill = window.SKILLS?.[skillId];
+                if (skill && skill.faction === faction) {
+                    factionSkills.push({ id: skillId, ...skill });
+                }
+            }
+
+            // 如果沒有學習任何勢力術法,隱藏勢力術法,顯示五行術法
+            if (factionSkills.length === 0) {
+                factionSection.style.display = 'none';
+                updateSkillButtons();
+                return;
+            }
+
+            // 隱藏五行術法,顯示勢力術法
+            elementSection.style.display = 'none';
+            factionSection.style.display = 'block';
+
+            // 分類:小技能和大招
+            const smallSkills = factionSkills.filter(s => s.type === 'small');
+            const ultSkills = factionSkills.filter(s => s.type === 'ultimate');
+
+            // 生成HTML
+            let html = '';
+
+            if (smallSkills.length > 0) {
+                html += `<div class="btn-row-title">${faction} · 小術</div>`;
+                html += `<div class="btn-row">`;
+                smallSkills.forEach(skill => {
+                    const spCost = skill.spCost || 2;
+                    html += `<button class="btn" onclick="useFactionSkill('${skill.id}')">${skill.name} (${spCost}SP)</button>`;
+                });
+                html += `</div>`;
+            }
+
+            if (ultSkills.length > 0) {
+                html += `<div class="btn-row-title">${faction} · 大招</div>`;
+                html += `<div class="btn-row">`;
+                ultSkills.forEach(skill => {
+                    html += `<button class="btn" onclick="useFactionSkill('${skill.id}')">${skill.name}</button>`;
+                });
+                html += `</div>`;
+            }
+
+            factionContainer.innerHTML = html;
+        }
+
+
+        // 頁面載入時更新按鈕顯示
+        window.addEventListener('load', () => {
+            renderFactionSkills();
+            updateSkillButtons();
+            updateSP(); // 初始化战技点显示
+        });
+
+        const playerUnit = window.state || {
+            name: "無名散修",
+            attack: 10,
+            defense: 5,
+            critRate: 0.05,
+            critDamage: 0.5,
+            maxHp: 100,
+            hp: 100,
+            realmLevel: 1,
+            elementAttack: "金",
+            rootElements: []
+        };
+
+        // ⭐ Debug: 顯示玩家實際數據
+        console.log("=== Player Unit Data ===");
+        console.log("Attack:", playerUnit.attack);
+        console.log("Defense:", playerUnit.defense);
+        console.log("Realm Level:", playerUnit.realmLevel);
+        console.log("Max HP:", playerUnit.maxHp);
+        console.log("Using gameState?", playerUnit === window);
+
+        // ⭐ 在頁面上顯示調試信息
+
+
+        // ⭐ Dynamic Initialization
+        let enemyUnit = null;
+        let battleContext = null;
+
+        // 1. Try loading dynamic boss data passed from other modules (e.g. Contribution Hall)
+        const dynamicBossData = localStorage.getItem("current-battle-enemy");
+        if (dynamicBossData) {
+            try {
+                enemyUnit = JSON.parse(dynamicBossData);
+                console.log("✅ Loaded dynamic boss data:", enemyUnit);
+                battleContext = localStorage.getItem("battle-return-to"); // e.g. "contribution"
+            } catch (e) {
+                console.error("Failed to parse dynamic boss data", e);
+            }
+        }
+
+        // 2. Fallback to existing logic if no dynamic data
+        if (!enemyUnit) {
+            const bossId = localStorage.getItem("battle-boss");
+            const targetId = (bossId && (typeof BOSS_DB !== 'undefined') && BOSS_DB[bossId]) ? bossId : "default_shadow";
+
+            if (typeof BOSS_DB !== 'undefined' && BOSS_DB[targetId]) {
+                const bossCfg = BOSS_DB[targetId];
+                enemyUnit = JSON.parse(JSON.stringify(bossCfg));
+                enemyUnit.hp = enemyUnit.maxHp;
+                enemyUnit.id = targetId;
+            } else {
+                enemyUnit = {
+                    id: "default_shadow",
+                    name: "心魔幻象",
+                    title: "心魔",
+                    color: "#ff4444",
+                    maxHp: 100,
+                    hp: 100,
+                    attack: 10,
+                    defense: 0,
+                    critRate: 0,
+                    critDamage: 0
+                };
+            }
+        }
+
+        // ⭐ 使用實際的最大血量
+        let enemyHP = enemyUnit ? enemyUnit.maxHp : 100;
+        let playerHP = playerUnit ? playerUnit.maxHp : 100;
+        const enemyMaxHP = enemyHP;
+        const playerMaxHP = playerHP;
+
+        if (enemyUnit) {
+            // Update Title
+            const sub = document.querySelector(".battle-sub");
+            if (sub) {
+                sub.textContent = `—— 左側${playerUnit.name || "青衣劍修"} VS 右側${enemyUnit.name} ——`;
+            }
+
+            // Update Cube Color
+            const enemyCube = document.getElementById("enemy");
+            if (enemyCube && enemyUnit.color) {
+                enemyCube.style.background = enemyUnit.color;
+                enemyCube.style.boxShadow = `0 0 30px ${enemyUnit.color}`;
+            }
+        }
+
+        // ⭐ 血量更新函數（更新血條和文字）
+        function updateHP() {
+            // 更新血條寬度（百分比）
+            const enemyPercent = (enemyHP / enemyMaxHP) * 100;
+            const playerPercent = (playerHP / playerMaxHP) * 100;
+
+            document.getElementById("ehp").style.width = enemyPercent + "%";
+            document.getElementById("php").style.width = playerPercent + "%";
+
+            // 更新血量文字
+            // 更新血量文字
+            document.getElementById("enemy-hp-text").textContent = `${Math.max(0, Math.floor(enemyHP))}/${enemyMaxHP}`;
+            document.getElementById("player-hp-text").textContent = `${Math.max(0, Math.floor(playerHP))}/${playerMaxHP}`;
+
+            // ⭐ 更新護盾顯示 (文字 + 白條)
+            const shieldText = document.getElementById("player-shield-text");
+            const shieldBar = document.getElementById("pshield-bar");
+
+            if (shieldText && shieldBar) {
+                if (window.playerShield > 0) {
+                    shieldText.style.display = "block";
+                    shieldText.textContent = `(${Math.floor(window.playerShield)})`;
+
+                    // 計算護盾比例 (相對於最大血量)
+                    const shieldPercent = Math.min(100, (window.playerShield / playerMaxHP) * 100);
+                    shieldBar.style.width = shieldPercent + "%";
+                } else {
+                    shieldText.style.display = "none";
+                    shieldBar.style.width = "0%";
+                }
+            }
+        }
+
+        // ⭐ 戰技點系統（SP - Skill Points）
+        let playerSP = 0;           // 玩家當前戰技點
+        let playerMaxSP = 10;       // 戰技點上限
+        let enemySP = 0;            // 敵人戰技點
+        let enemyMaxSP = 10;
+
+        // ⭐ 能量系統（Energy）
+        let playerEnergy = 0;       // 玩家當前能量
+        let playerMaxEnergy = 100;  // 能量上限
+        let enemyEnergy = 0;        // 敵人能量
+        let enemyMaxEnergy = 100;
+
+        // ⭐ 能量獲得常數
+        const SP_GAIN_FROM_ATTACK = 1;        // 普攻獲得1點SP
+        const ENERGY_GAIN_FROM_DAMAGE = 0.5; // 受傷獲得傷害25%的能量
+        const ENERGY_GAIN_FROM_ATTACK = 15;    // 普攻獲得10點能量
+        const ENERGY_GAIN_FROM_SKILL = 30;    // 戰技獲得25點能量
+        const ENERGY_COST_ULTIMATE = 100;     // 大法術消耗100能量
+
+        // ⭐ 更新戰技點顯示
+        function updateSP() {
+            // ⭐ 更新视觉钻石显示
+            const spVisual = document.getElementById("sp-points-visual");
+            if (spVisual) {
+                spVisual.innerHTML = '';
+                for (let i = 0; i < playerMaxSP; i++) {
+                    const diamond = document.createElement('div');
+                    diamond.className = 'sp-point';
+                    if (i < playerSP) {
+                        diamond.classList.add('active');
+                    } else {
+                        diamond.classList.add('used');
+                    }
+                    spVisual.appendChild(diamond);
+                }
+            }
+        }
+
+        // ⭐ 更新能量顯示
+        function updateEnergy() {
+            const playerPercent = (playerEnergy / playerMaxEnergy) * 100;
+            const enemyPercent = (enemyEnergy / enemyMaxEnergy) * 100;
+
+            const penergyBar = document.getElementById("penergy");
+            const penergyText = document.getElementById("player-energy-text");
+
+            if (penergyBar) penergyBar.style.width = playerPercent + "%";
+            if (penergyText) penergyText.textContent = `${Math.floor(playerEnergy)}/${playerMaxEnergy}`;
+
+            // 敵人能量條（如果有）
+            const eenergyBar = document.getElementById("eenergy");
+            if (eenergyBar) eenergyBar.style.width = enemyPercent + "%";
+
+            // 能量滿時的特效
+            if (playerEnergy >= playerMaxEnergy) {
+                showUltimateReadyEffect();
+            }
+
+            // ⭐ 更新大招按鈕的能量填充效果
+            updateUltimateButtonsFill(playerPercent);
+        }
+
+        // ⭐ 更新大招按鈕的能量填充
+        function updateUltimateButtonsFill(energyPercent) {
+            const ultimateButtons = document.querySelectorAll('.ultimate-skill');
+
+            ultimateButtons.forEach(btn => {
+                // 檢查是否已有填充元素，沒有則創建
+                let fillElement = btn.querySelector('.energy-fill');
+                if (!fillElement) {
+                    fillElement = document.createElement('div');
+                    fillElement.className = 'energy-fill';
+                    btn.insertBefore(fillElement, btn.firstChild);
+                }
+
+                // 直接設置填充元素的高度
+                fillElement.style.height = energyPercent + '%';
+
+                // 能量滿時添加特殊class
+                if (energyPercent >= 100) {
+                    btn.classList.add('energy-full');
+                } else {
+                    btn.classList.remove('energy-full');
+                }
+            });
+        }
+
+        // ⭐ 更新戰技點顯示
+        function updateSP() {
+            const playerPercent = (playerSP / playerMaxSP) * 100;
+            const enemyPercent = (enemySP / enemyMaxSP) * 100;
+
+            const pspBar = document.getElementById("psp");
+            const pspText = document.getElementById("player-sp-text");
+
+            if (pspBar) pspBar.style.width = playerPercent + "%";
+            if (pspText) pspText.textContent = `${Math.floor(playerSP)}/${playerMaxSP}`;
+
+            // 敵人SP條（如果有）
+            const espBar = document.getElementById("esp");
+            if (espBar) espBar.style.width = enemyPercent + "%";
+
+            // ⭐ 渲染視覺化SP點數
+            renderSPDisplay();
+        }
+
+        // ⭐ 渲染SP點數視覺化顯示
+        function renderSPDisplay() {
+            const container = document.getElementById('sp-display');
+            if (!container) return;
+
+            // 保留標籤，清除舊的點數
+            const label = container.querySelector('.sp-label');
+            container.innerHTML = '';
+            if (label) container.appendChild(label);
+
+            // 生成SP點數（菱形）
+            for (let i = 0; i < playerMaxSP; i++) {
+                const point = document.createElement('div');
+                point.className = 'sp-point';
+
+                // 根據當前SP數量設置狀態
+                if (i < Math.floor(playerSP)) {
+                    point.classList.add('active');
+                } else {
+                    point.classList.add('used');
+                }
+
+                container.appendChild(point);
+            }
+        }
+
+        // ⭐ 獲得戰技點
+        function gainSP(amount, isPlayer = true) {
+            if (isPlayer) {
+                playerSP = Math.min(playerSP + amount, playerMaxSP);
+                showFloatingText("+SP", amount, "player", "#ff9800");
+            } else {
+                enemySP = Math.min(enemySP + amount, enemyMaxSP);
+            }
+            updateSP();
+        }
+
+        // ⭐ 獲得能量
+        function gainEnergy(amount, isPlayer = true) {
+            if (isPlayer) {
+                playerEnergy = Math.min(playerEnergy + amount, playerMaxEnergy);
+                showFloatingText("+能量", amount, "player", "#9c27b0");
+            } else {
+                enemyEnergy = Math.min(enemyEnergy + amount, enemyMaxEnergy);
+            }
+            updateEnergy();
+        }
+
+        // ⭐ 顯示大招就緒特效
+        function showUltimateReadyEffect() {
+            const player = document.getElementById("player");
+            if (!player) return;
+            player.style.boxShadow = "0 0 40px #9c27b0, 0 0 80px #e91e63";
+            setTimeout(() => {
+                player.style.boxShadow = "";
+            }, 2000);
+        }
+
+        // ⭐ 顯示浮動文字
+        function showFloatingText(label, value, target, color) {
+            const targetEl = document.getElementById(target);
+            if (!targetEl) return;
+
+            const r = targetEl.getBoundingClientRect();
+            const msg = document.createElement('div');
+            msg.className = "damage";
+            msg.style.left = r.left + 20 + "px";
+            msg.style.top = r.top - 30 + "px";
+            msg.style.color = color;
+            msg.style.fontSize = "16px";
+            msg.textContent = `${label} +${value}`;
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), 900);
+        }
+
+        // 初始化血量、戰技點和能量顯示
+        updateHP();
+        updateSP();
+        updateEnergy();
+
+
+        // ===== 速度與行動回合機制 =====
+        let isPlayerTurn = true;
+        let isEnemyFrozen = false;
+        // ⭐ 燃燒狀態變數
+        let enemyBurnDamage = 0;
+        let enemyBurnDuration = 0;
+        // ⭐ 護盾狀態變數
+        window.playerShield = 0;
+        window.playerShieldDuration = 0;
+
+        let playerSpeed = (playerUnit.speed || 10);
+        let enemySpeed = (enemyUnit.speed || (enemyUnit.realmLevel ? enemyUnit.realmLevel * 2 + 10 : 10));
+
+        // 確保初始速度大於 0
+        if (playerSpeed < 1) playerSpeed = 1;
+        if (enemySpeed < 1) enemySpeed = 1;
+
+        let playerMaxActs = Math.floor(playerSpeed / enemySpeed);
+        if (playerMaxActs < 1) playerMaxActs = 1;
+
+        let enemyMaxActs = Math.floor(enemySpeed / playerSpeed);
+        if (enemyMaxActs < 1) enemyMaxActs = 1;
+
+        // ⭐ Moved Debug UI here to avoid TDZ (Variable Hoisting Issues)
+        // Debug UI (Disabled)
+        /*
+        const debugDiv = document.createElement('div');
+        debugDiv.style.cssText = 'position:fixed;top:10px;right:10px;background:rgba(0,0,0,0.8);color:#0f0;padding:10px;border:2px solid #0f0;border-radius:5px;font-family:monospace;font-size:12px;z-index:99999;';
+        debugDiv.innerHTML = `
+            <div style="color:#ff0;font-weight:bold;margin-bottom:5px;">🔍 DEBUG INFO</div>
+            <div>攻擊力: ${playerUnit.attack}</div>
+            <div>防禦力: ${playerUnit.defense}</div>
+            <div>境界: ${playerUnit.realmLevel}</div>
+            <div>血量: ${playerUnit.maxHp}</div>
+            <div>使用gameState: ${playerUnit === window ? '✅' : '❌'}</div>
+            <div id="debug-frozen">Waiting...</div>
+        `;
+        document.body.appendChild(debugDiv);
+
+        // Debug Updater
+        setInterval(() => {
+            const div = document.getElementById('debug-frozen');
+            if (div && typeof isEnemyFrozen !== 'undefined') {
+                div.textContent = `Frozen: ${isEnemyFrozen} | BattleAnim: ${typeof isBattleAnimating !== 'undefined' ? isBattleAnimating : '?'}`;
+            }
+        }, 500);
+        */
+        if (enemyMaxActs < 1) enemyMaxActs = 1;
+
+        let currentActsLeft = 0;
+
+        // ⭐ 全局動畫狀態標誌
+        let isBattleAnimating = false;
+
+        // 初始化回合優先權
+        if (playerSpeed >= enemySpeed) {
+            isPlayerTurn = true;
+            currentActsLeft = playerMaxActs;
+        } else {
+            isPlayerTurn = false;
+            currentActsLeft = enemyMaxActs;
+            // 敵方先攻，延遲觸發
+            setTimeout(enemyTurn, 1000);
+        }
+
+        function updateTurnUI() {
+            const btns = document.querySelectorAll(".btn");
+            btns.forEach(b => {
+                const disabled = !isPlayerTurn || isBattleAnimating;
+                b.disabled = disabled;
+                b.style.opacity = disabled ? "0.5" : "1";
+                b.style.cursor = disabled ? "not-allowed" : "pointer";
+            });
+
+            const sub = document.querySelector(".battle-sub");
+            if (!sub) return;
+
+            if (playerHP <= 0) {
+                sub.textContent = "—— 勝負已分 : 成功 ——";
+                sub.style.color = "#ff4444";
+            } else if (enemyHP <= 0) {
+                sub.textContent = "—— 勝負已分 : 失敗——";
+                sub.style.color = "#4caf50";
+            } else {
+                let actionText = `(剩餘行動: ${currentActsLeft})`;
+                if (isPlayerTurn) {
+                    sub.textContent = `—— 你的回合 ${actionText} ——`;
+                    sub.style.color = "#a49378";
+                } else {
+                    sub.textContent = `—— 敵方回合 ${actionText} ——`;
+                    sub.style.color = "#ff5555";
+                }
+            }
+        }
+
+        function endPlayerTurn() {
+            if (enemyHP <= 0) return;
+
+            // 扣除行動次數
+            currentActsLeft--;
+
+            if (currentActsLeft > 0) {
+                // 還有行動次數，繼續玩家回合
+                updateTurnUI();
+                const msg = document.createElement('div');
+                msg.style.cssText = 'position:absolute;top:30%;left:20%;transform:translate(-50%,-50%);color:#aaffaa;font-weight:bold;font-size:18px;text-shadow:0 0 5px #000;z-index:999;animation:floatUp 0.8s forwards;';
+                msg.textContent = "速度壓制！額外行動！";
+                document.body.appendChild(msg);
+                setTimeout(() => msg.remove(), 800);
+            } else {
+                // 行動結束，換對手
+                isPlayerTurn = false;
+                currentActsLeft = enemyMaxActs; // 重置敵方行動次數
+
+                // ⭐ 護盾持續時間遞減
+                if (window.playerShieldDuration > 0) {
+                    window.playerShieldDuration--;
+                    if (window.playerShieldDuration <= 0) {
+                        window.playerShield = 0;
+                        updateHP();
+                        const player = document.getElementById("player");
+                        if (player) {
+                            player.style.boxShadow = "";
+                        }
+                    }
+                }
+
+                updateTurnUI();
+                setTimeout(enemyTurn, 1000);
+            }
+        }
+
+        function enemyTurn() {
+            console.log(`[EnemyTurn] Starting. Frozen Status: ${isEnemyFrozen}`);
+            if (playerHP <= 0 || enemyHP <= 0) return;
+
+            // ⭐ 燃燒傷害觸發 (每次行動前都燒)
+            if (enemyBurnDuration > 0 && enemyBurnDamage > 0) {
+                const enemy = document.getElementById("enemy");
+                if (enemy) {
+                    showDamage(enemy.getBoundingClientRect().left + 40, enemy.getBoundingClientRect().top - 40, enemyBurnDamage, false, false, "#ff4400"); // Orange for burn
+
+                    // Show Burn Text
+                    const dmgText = document.querySelector(".damage:last-child");
+                    if (dmgText) {
+                        dmgText.textContent = `🔥 -${Math.floor(enemyBurnDamage)}`;
+                        dmgText.style.color = "#ff4400";
+                        dmgText.style.fontSize = "24px";
+                    }
+
+                    // Apply Damage
+                    damageEnemy(enemyBurnDamage, false);
+                    if (enemyHP <= 0) return; // Died from burn
+                }
+            }
+
+            const enemy = document.getElementById("enemy");
+
+            if (isEnemyFrozen) {
+                if (enemy) {
+                    const r = enemy.getBoundingClientRect();
+                    showDamage(r.left + 20, r.top - 20, "FROZEN!", false, false);
+                    const dmgText = document.querySelector(".damage:last-child");
+                    if (dmgText && dmgText.textContent === "-FROZEN!") {
+                        dmgText.style.color = "#00e5ff";
+                    }
+                }
+
+                isEnemyFrozen = false;
+
+                // ⭐ 移除雪花圖標
+                const effectContainer = document.getElementById('enemy-effects');
+                if (effectContainer) {
+                    const icon = effectContainer.querySelector('.freeze-icon');
+                    if (icon) icon.remove();
+                }
+
+                // ⭐ 凍結消耗掉整回合行動 (強制清空剩餘行動點數)
+                currentActsLeft = 1; // 設為1，讓 endEnemyTurn 扣減後變為0，觸發回合切換
+                endEnemyTurn();
+                return;
+            }
+
+            // 如果沒有被凍結，恢復原本的顏色 (從冰凍狀態解除了)
+            if (enemy && enemy.dataset.originalBg) {
+                // 清除強制樣式
+                enemy.style.background = "";
+                enemy.style.borderColor = "";
+                enemy.style.boxShadow = "";
+                enemy.style.filter = "";
+
+                // 恢復原樣
+                enemy.style.background = enemy.dataset.originalBg;
+                if (enemy.dataset.originalBorder) {
+                    enemy.style.borderColor = enemy.dataset.originalBorder;
+                }
+
+                // 清除暫存的數據
+                delete enemy.dataset.originalBg;
+                delete enemy.dataset.originalBorder;
+            }
+
+            // AI Logic based on Realm
+            const level = enemyUnit.realmLevel || 10;
+            const name = enemyUnit.name || "";
+            // Elders or High Level unlock Supremacy
+            const canUlt = level >= 25 || name.includes("長老");
+
+            const rand = Math.random();
+
+            if (level <= 14) {
+                // Tier 1 (Qi/Foundation): Slash Only
+                enemySlash();
+            } else if (!canUlt) {
+                // Tier 2 (Core/Soul): Slash + Skill (Fireball)
+                // 40% Slash, 60% Skill
+                if (rand < 0.4) enemySlash();
+                else enemyFireball();
+            } else {
+                // Tier 3 (High Realm or Elder): Full Kit
+                // 20% Slash, 40% Skill, 40% Ultimate
+                if (rand < 0.2) enemySlash();
+                else if (rand < 0.6) enemyFireball();
+                else enemyUltimate();
+            }
+        }
+
+        function endEnemyTurn() {
+            if (playerHP <= 0) return;
+
+            currentActsLeft--;
+
+            if (currentActsLeft > 0) {
+                // 敵方還有行動次數，繼續攻擊
+                updateTurnUI();
+
+                const msg = document.createElement('div');
+                msg.style.cssText = 'position:absolute;top:30%;right:20%;transform:translate(50%,-50%);color:#ffaaaa;font-weight:bold;font-size:18px;text-shadow:0 0 5px #000;z-index:999;animation:floatUp 0.8s forwards;';
+                msg.textContent = "敵方速度壓制！連續攻擊！";
+                document.body.appendChild(msg);
+                setTimeout(() => msg.remove(), 800);
+
+                setTimeout(enemyTurn, 1200); // 稍作延遲再攻擊
+            } else {
+                // 敵方行動結束，換玩家
+                isPlayerTurn = true;
+                currentActsLeft = playerMaxActs; // 重置玩家行動次數
+
+                // ⭐ 燃燒回合遞減 (大回合結束時減1)
+                if (enemyBurnDuration > 0) {
+                    enemyBurnDuration--;
+
+                    // 更新圖標上的回合數
+                    const effectContainer = document.getElementById('enemy-effects');
+                    if (effectContainer) {
+                        const icon = effectContainer.querySelector('.burn-icon');
+                        if (icon) {
+                            const count = icon.querySelector('.effect-count');
+                            if (count) count.textContent = enemyBurnDuration;
+                        }
+                    }
+
+                    if (enemyBurnDuration <= 0) {
+                        // 移除燃燒效果
+                        enemyBurnDamage = 0;
+                        const effectContainer = document.getElementById('enemy-effects');
+                        if (effectContainer) {
+                            const icon = effectContainer.querySelector('.burn-icon');
+                            if (icon) icon.remove();
+                        }
+                        // 移除視覺濾鏡
+                        const enemy = document.getElementById("enemy");
+                        if (enemy) enemy.style.filter = "";
+                    }
+                }
+
+                updateTurnUI();
+            }
+        }
+
+        // updateHP 函數已在前面定義（使用實際血量），這裡不需要重複
+
+        function showDamage(x, y, val, isHeal = false, isCrit = false) {
+            const d = document.createElement("div");
+            d.className = "damage" + (isHeal ? " heal" : "");
+            d.style.left = x + "px";
+            d.style.top = y + "px";
+
+            if (isHeal) {
+                d.textContent = "+" + val;
+            } else if (isCrit) {
+                d.style.color = "#ffd93b";
+                d.style.textShadow = "0 0 8px rgba(255,220,120,0.9)";
+                d.textContent = "CRIT -" + val;
+            } else {
+                d.textContent = "-" + val;
+            }
+
+            document.body.appendChild(d);
+            setTimeout(() => d.remove(), 900);
+        }
+
+        function getSkillDamage(skillMult = 1, elementOverride = null) {
+            if (typeof performAttack !== "function") {
+                const base = playerUnit.attack || 10;
+                return { dmg: Math.max(1, Math.round(base * skillMult)), isCrit: false };
+            }
+
+            const originalElem = playerUnit.elementAttack;
+            if (elementOverride) {
+                playerUnit.elementAttack = elementOverride;
+            }
+
+            const result = performAttack(playerUnit, enemyUnit);
+            playerUnit.elementAttack = originalElem;
+
+            let dmg = Math.round(result.damage * skillMult);
+            if (dmg < 1) dmg = 1;
+
+            return {
+                dmg,
+                isCrit: result.isCrit
+            };
+        }
+
+
+
+        // ⭐ Unified Return Logic
+        function returnToGame(isWin) {
+            if (typeof GameStateManager !== 'undefined') {
+                window.safeSave();
+            }
+
+            // Save result for the caller
+            localStorage.setItem("battle-result", JSON.stringify({
+                win: isWin,
+                bossId: enemyUnit.id,
+                timestamp: Date.now()
+            }));
+
+            // Clear temporary battle data
+            localStorage.removeItem("current-battle-enemy");
+            // localStorage.removeItem("battle-return-to"); // 保留給接收方處理
+
+            // ⭐ Check for custom return path (Priority)
+            const returnTo = localStorage.getItem('battle-return-to');
+            if (returnTo === 'inner_demon' || returnTo === 'monster_forest') {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Handle Contexts
+            if (battleContext === "contribution") {
+                // Return to Faction Hall
+                if (window.parent && window.parent.document) {
+                    // If inside iframe, change iframe src
+                    const frame = window.parent.document.getElementById("faction-frame");
+                    if (frame) {
+                        frame.src = "faction.html?t=" + Date.now();
+                        return;
+                    }
+                }
+                // Fallback for direct access or no iframe
+                window.location.href = "faction.html";
+                return;
+            }
+
+            if (battleContext === "monster_forest") {
+                // Return to main game (index.html)
+                window.location.href = "index.html";
+                return;
+            }
+
+            // Default fallback: Honor Hall
+            returnToHonorHall();
+        }
+
+        // Legacy wrapper (now smart router)
+        function returnToHonorHall() {
+            if (window.parent && window.parent.document) {
+                const frame = window.parent.document.getElementById("faction-frame");
+                if (frame) {
+                    frame.src = "honor-hall.html";
+                    return;
+                }
+            }
+            window.location.href = "honor-hall.html";
+        }
+
+        function handleVictory() {
+            updateTurnUI();
+            console.log("=== Battle Victory ===");
+            console.log("Player won against:", enemyUnit.name);
+
+            // 0. Check Monster Forest Battle
+            if (battleContext === 'monster_forest') {
+                const tier = sessionStorage.getItem('monsterTier');
+                const materialCountData = sessionStorage.getItem('monsterMaterialCount');
+
+                if (tier && materialCountData) {
+                    const { min, max } = JSON.parse(materialCountData);
+                    const count = min + Math.floor(Math.random() * (max - min + 1));
+
+                    // 生成隨機材料
+                    const arts = ['pill', 'weapon', 'talisman', 'formation'];
+                    const materials = [];
+
+                    for (let i = 0; i < count; i++) {
+                        const art = arts[Math.floor(Math.random() * arts.length)];
+                        const matNum = Math.floor(Math.random() * 5) + 1;
+                        const matId = `${art}_${tier}_${matNum}`;
+                        materials.push(matId);
+                    }
+
+                    // 發放材料到window.state
+                    if (typeof addMaterial === 'function' && window.state) {
+                        materials.forEach(matId => {
+                            addMaterial(matId, 1, { source: '妖獸林' });
+                        });
+                    }
+
+                    // 清除sessionStorage
+                    sessionStorage.removeItem('monsterTier');
+                    sessionStorage.removeItem('monsterMaterialCount');
+
+                    // 標記歷練完成
+                    if (window.state) {
+                        if (!window.state.completedTrials) {
+                            window.state.completedTrials = [];
+                        }
+                        if (!window.state.completedTrials.includes('monster_forest')) {
+                            window.state.completedTrials.push('monster_forest');
+                        }
+                    }
+
+                    // 保存狀態
+                    if (typeof GameStateManager !== 'undefined') {
+                        window.safeSave();
+                    }
+
+                    setTimeout(() => {
+                        alert(`【戰鬥勝利】\n\n擊敗 ${enemyUnit.name}！\n獲得 ${count} 個${tier === 'white' ? '白' : tier === 'green' ? '綠' : tier === 'blue' ? '藍' : '紫'}階材料！`);
+                        window.location.href = 'index.html';
+                    }, 500);
+                    return;
+                }
+            }
+
+            // 1. Check Promotion Logic
+            const bossId = enemyUnit.id;
+            const promotionMap = {
+                "npc_inner": 1,
+                "npc_core": 2,
+                "npc_elder": 3,
+                "npc_guard": 3,
+                "npc_master": 4
+            };
+            const targetRank = promotionMap[bossId];
+
+            if (targetRank !== undefined && window.state) {
+                const currentRank = window.state.factionRank || 0;
+                if (currentRank < targetRank) {
+                    console.log("Promoting to Rank", targetRank);
+                    window.state.factionRank = targetRank;
+
+                    if (typeof GameStateManager !== 'undefined') {
+                        window.safeSave();
+                        // GameStateManager.sync();
+                    }
+
+                    setTimeout(() => {
+                        alert(`【恭喜晉升】\n\n戰勝 ${enemyUnit.name}！\n職位提升至：${enemyUnit.title} (Rank ${targetRank})`);
+                        returnToGame(true);
+                    }, 500);
+                    return;
+                }
+            }
+
+            // 2. Normal Victory (Contribution Hall or other)
+            setTimeout(() => {
+                const isPromo = false;
+                alert(`【戰鬥勝利】\n\n戰勝 ${enemyUnit.name}！\n正在返回...`);
+                returnToGame(true);
+            }, 500);
+
+            // 3. Skill Proficiency Logic
+            if (window.state && window.state.learnedSkills) {
+                let gained = [];
+                for (let sid in window.state.learnedSkills) {
+                    const limit = 100;
+                    if (window.state.learnedSkills[sid] < limit) {
+                        window.state.learnedSkills[sid] += 1;
+                        gained.push(window.SKILLS && window.SKILLS[sid] ? window.SKILLS[sid].name : sid);
+                    }
+                }
+                if (gained.length > 0 && typeof GameStateManager !== 'undefined') {
+                    window.safeSave();
+                }
+            }
+        }
+
+        function handleDefeat() {
+            updateTurnUI();
+            console.log("=== Battle Defeat ===");
+
+            setTimeout(() => {
+                alert(`【挑戰失敗】\n\n你不敵 ${enemyUnit.name}，回宗門靜養一段時日。`);
+                returnToGame(false);
+            }, 500);
+        }
+
+        // ===== 傷害計算函數 =====
+        function getSkillDamage(multiplier = 1.0, element = null, skillId = null) {
+            let bonus = 0;
+            if (skillId && window.state && window.state.learnedSkills) {
+                const prof = window.state.learnedSkills[skillId] || 0;
+                if (window.getProficiencyBonus) {
+                    bonus = window.getProficiencyBonus(prof);
+                }
+            }
+            const finalMult = multiplier * (1 + bonus);
+
+            if (typeof performAttack === 'function') {
+                let originalElem = playerUnit.elementAttack;
+                if (element) playerUnit.elementAttack = element;
+                const resultRaw = performAttack(playerUnit, enemyUnit);
+                if (element) playerUnit.elementAttack = originalElem;
+                const dmg = Math.floor(resultRaw.damage * finalMult);
+                return { dmg: Math.max(1, dmg), isCrit: resultRaw.isCrit };
+            } else {
+                const baseAtk = playerUnit.attack || 10;
+                const enemyDef = enemyUnit.defense || 0;
+                const defMult = 1 - (enemyDef / (enemyDef + 100));
+                const baseDmg = Math.floor(baseAtk * defMult * finalMult);
+                const critRate = playerUnit.critRate || 0.05;
+                const isCrit = Math.random() < critRate;
+                const dmg = isCrit ? Math.floor(baseDmg * (1 + (playerUnit.critDamage || 0.5))) : baseDmg;
+                return { dmg: Math.max(1, dmg), isCrit };
+            }
+        }
+
+        function checkLearned(skillId) {
+            if (!window.state) return true;
+            const loaded = window.state.learnedSkills || {};
+            if (!loaded.hasOwnProperty(skillId)) {
+                const msg = document.createElement('div');
+                msg.style.cssText = 'position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:#fff;padding:10px 20px;border-radius:4px;z-index:9999';
+                msg.textContent = "尚未學習此功法！請前往功法閣學習。";
+                document.body.appendChild(msg);
+                setTimeout(() => msg.remove(), 1500);
+                return false;
+            }
+            return true;
+        }
+
+        // ⭐ 檢查並消耗戰技點
+        function checkSP(skillId) {
+            const skill = window.SKILLS ? window.SKILLS[skillId] : null;
+            if (!skill) return true;
+
+            const cost = skill.spCost || 0;
+            if (cost === 0) return true; // 不需要SP的技能
+
+            if (playerSP < cost) {
+                // 顯示戰技點不足提示
+                const msg = document.createElement('div');
+                msg.style.position = 'absolute';
+                msg.style.top = '40%';
+                msg.style.left = '50%';
+                msg.style.transform = 'translate(-50%, -50%)';
+                msg.style.background = 'rgba(0,0,0,0.8)';
+                msg.style.color = '#ff9800';
+                msg.style.padding = '10px 20px';
+                msg.style.borderRadius = '4px';
+                msg.style.zIndex = '9999';
+                msg.textContent = `戰技點不足！需要 ${cost} SP（當前 ${Math.floor(playerSP)}）`;
+                document.body.appendChild(msg);
+                setTimeout(() => msg.remove(), 1500);
+                return false;
+            }
+
+            // 消耗戰技點
+            playerSP -= cost;
+            updateSP();
+
+            // ⭐ 使用戰技獲得能量
+            gainEnergy(ENERGY_GAIN_FROM_SKILL, true);
+
+            return true;
+        }
+
+        // ⭐ 檢查並消耗能量（用於大法術）
+        function checkEnergy(energyCost = 100) {
+            if (playerEnergy < energyCost) {
+                // 顯示能量不足提示
+                const msg = document.createElement('div');
+                msg.style.position = 'absolute';
+                msg.style.top = '40%';
+                msg.style.left = '50%';
+                msg.style.transform = 'translate(-50%, -50%)';
+                msg.style.background = 'rgba(0,0,0,0.8)';
+                msg.style.color = '#9c27b0';
+                msg.style.padding = '10px 20px';
+                msg.style.borderRadius = '4px';
+                msg.style.zIndex = '9999';
+                msg.textContent = `能量不足！需要 ${energyCost} 能量（當前 ${Math.floor(playerEnergy)}）`;
+                document.body.appendChild(msg);
+                setTimeout(() => msg.remove(), 1500);
+                return false;
+            }
+
+            // 消耗能量
+            playerEnergy -= energyCost;
+            updateEnergy();
+
+            return true;
+        }
+
+        // 治療玩家
+        function healPlayer(amount) {
+            playerHP = Math.min(playerHP + amount, playerMaxHP);
+            updateHP();
+
+            const player = document.getElementById("player");
+            const pRect = player.getBoundingClientRect();
+            showDamage(pRect.left + 20, pRect.top - 15, amount, true, false);
+
+            player.classList.add("healed");
+            setTimeout(() => player.classList.remove("healed"), 300);
+        }
+
+        // 對敵人造成傷害
+        function damageEnemy(dmg, isCrit = false) {
+            enemyHP -= dmg;
+            if (enemyHP < 0) enemyHP = 0;
+            updateHP();
+
+            const enemy = document.getElementById("enemy");
+            const eRect = enemy.getBoundingClientRect();
+            showDamage(eRect.left + 20, eRect.top - 15, dmg, false, isCrit);
+
+            enemy.classList.add("damaged");
+            setTimeout(() => enemy.classList.remove("damaged"), 300);
+
+            if (enemyHP <= 0) {
+                setTimeout(() => handleVictory(), 800);
+            }
+        }
+
+        // 對玩家造成傷害
+        function damagePlayer(dmg, isCrit = false) {
+            // ⭐ 護盾抵擋傷害
+            if (window.playerShield > 0) {
+                // ⭐ 反彈 10% 傷害
+                const reflectDmg = Math.floor(dmg * 0.10);
+                if (reflectDmg > 0) {
+                    const enemy = document.getElementById("enemy");
+                    if (enemy) {
+                        const eRect = enemy.getBoundingClientRect();
+                        showDamage(eRect.left, eRect.top - 20, "Reflect " + reflectDmg, false, false, "#aaffaa");
+                        enemyHP -= reflectDmg;
+                        if (enemyHP < 0) enemyHP = 0;
+                        updateHP();
+                        if (enemyHP <= 0) setTimeout(() => handleVictory(), 800);
+                    }
+                }
+                let absorb = Math.min(window.playerShield, dmg);
+                window.playerShield -= absorb;
+                dmg -= absorb;
+
+                // 顯示抵擋特效
+                const player = document.getElementById("player");
+                if (player) {
+                    showDamage(player.getBoundingClientRect().left, player.getBoundingClientRect().top - 40, "Absorb!", false, false, "#ffd700");
+                }
+            }
+
+            if (dmg > 0) {
+                playerHP -= dmg;
+                if (playerHP < 0) playerHP = 0;
+            }
+            updateHP();
+
+            const player = document.getElementById("player");
+            const pRect = player.getBoundingClientRect();
+            showDamage(pRect.left + 20, pRect.top - 15, dmg, false, isCrit);
+
+            player.classList.add("damaged");
+            setTimeout(() => player.classList.remove("damaged"), 300);
+
+            // ⭐ 受傷累積能量（傷害的15%）
+            const energyGain = Math.floor(dmg * ENERGY_GAIN_FROM_DAMAGE);
+            if (energyGain > 0) {
+                gainEnergy(energyGain, true);
+            }
+
+            if (playerHP <= 0) {
+                setTimeout(() => handleDefeat(), 800);
+            }
+        }
+
+
+
+
+
+        // ⭐ 使用勢力術法
+        function useFactionSkill(skillId) {
+            if (!checkTurn()) return;
+
+            const skill = window.SKILLS?.[skillId];
+            if (!skill) {
+                console.error("Skill not found:", skillId);
+                return;
+            }
+
+            // ⭐ 根據技能類型檢查資源
+            if (skill.type === 'ultimate') {
+                // 大招消耗能量
+                if (!checkEnergy(ENERGY_COST_ULTIMATE)) return;
+            } else {
+                // 小技能消耗SP
+                if (!checkSP(skillId)) return;
+            }
+
+            // 獲取熟練度加成
+            const proficiency = window.state?.learnedSkills?.[skillId] || 0;
+            const bonus = window.getProficiencyBonus ? window.getProficiencyBonus(proficiency) : 0;
+
+            // 播放動畫
+            playSkillAnimation(skill);
+
+            // 根據技能類型設置不同的延遲時間
+            const damageDelay = skill.type === 'ultimate' ? 4000 : 300;
+
+            // 延遲執行技能效果,讓動畫先播放
+            // 延遲執行技能效果,讓動畫先播放
+            isBattleAnimating = true; // 鎖定
+            updateTurnUI();
+
+            setTimeout(() => {
+                isBattleAnimating = false; // 解鎖
+                updateTurnUI();
+
+                // 根據術法類型執行效果 (改為獨立判斷，支援複合效果)
+                if (skill.baseDamage) {
+                    executeDamageSkill(skill, bonus);
+                }
+                if (skill.baseHeal) {
+                    executeHealSkill(skill, bonus);
+                }
+                if (skill.shieldAmount) {
+                    executeShieldSkill(skill, bonus);
+                }
+                if (skill.manaRestore) {
+                    executeManaRestoreSkill(skill, bonus);
+                }
+                if (skill.attackBonus || skill.defenseBonus || skill.speedBonus) {
+                    executeBuffSkill(skill, bonus);
+                }
+            }, damageDelay);
+
+            // ⭐ 只有小技能消耗回合
+            if (skill.type !== 'ultimate') {
+                endPlayerTurn();
+            }
+        }
+
+        // 執行傷害類術法
+        function executeDamageSkill(skill, bonus) {
+            // 使用玩家實際攻擊力
+            const playerAttack = window.state?.attack || playerUnit.attack || 10;
+            const baseDmg = skill.baseDamage * playerAttack * (1 + bonus);
+            const result = performAttack({ ...playerUnit, attack: baseDmg }, enemyUnit);
+
+            enemyHP -= result.damage;
+            enemyHP = Math.max(0, enemyHP);
+
+            const enemy = document.getElementById("enemy");
+            if (enemy) {
+                const r = enemy.getBoundingClientRect();
+                showDamage(r.left + 20, r.top - 20, result.damage, false, result.isCrit);
+
+                enemy.classList.add("damaged");
+                setTimeout(() => enemy.classList.remove("damaged"), 300);
+            }
+
+            updateHP();
+            checkBattleEnd();
+
+            // ⭐ 補上凍結邏輯 (適用於勢力技能)
+            if (skill.freezeChance && Math.random() < skill.freezeChance) {
+                console.log(`[Freeze] Skill ${skill.name} triggers freeze!`);
+                isEnemyFrozen = true;
+                const enemy = document.getElementById("enemy");
+
+                // ⭐ 添加雪花圖標
+                const effectContainer = document.getElementById('enemy-effects');
+                if (effectContainer) {
+                    if (!effectContainer.querySelector('.freeze-icon')) {
+                        const icon = document.createElement('div');
+                        icon.className = 'effect-icon freeze-icon';
+                        icon.textContent = '❄️';
+                        effectContainer.appendChild(icon);
+                    }
+                }
+                // ... (rest of freeze logic handled by existing code) ...
+            } // End Freeze Logic
+
+            // ⭐ 補上燃燒邏輯
+            // 如果有 burnChance 則進行機率判定，否則只要有 burnDamage 就預設必中 (如大招)
+            const shouldBurn = skill.burnDamage && (!skill.burnChance || Math.random() < skill.burnChance);
+
+            if (shouldBurn) {
+                // 計算燃燒傷害：如果是小數 (<=1) 則視為攻擊力百分比，否則為固定數值
+                let bDmg = skill.burnDamage;
+                if (bDmg <= 1) {
+                    const pAtk = window.state?.attack || playerUnit.attack || 10;
+                    bDmg = Math.floor(pAtk * bDmg);
+                }
+
+                console.log(`[Burn] Skill ${skill.name} applies burn: ${bDmg} (Raw: ${skill.burnDamage})`);
+                enemyBurnDamage = bDmg;
+                enemyBurnDuration = skill.duration || 3;
+
+                const enemy = document.getElementById("enemy");
+
+                // ⭐ 添加火焰圖標
+                const effectContainer = document.getElementById('enemy-effects');
+                if (effectContainer) {
+                    // 移除舊的(更新數值用)或新增
+                    let icon = effectContainer.querySelector('.burn-icon');
+                    if (!icon) {
+                        icon = document.createElement('div');
+                        icon.className = 'effect-icon burn-icon';
+                        icon.innerHTML = '🔥<div class="effect-count">' + enemyBurnDuration + '</div>';
+                        effectContainer.appendChild(icon);
+                    } else {
+                        // 更新現有圖標的數字
+                        const count = icon.querySelector('.effect-count');
+                        if (count) count.textContent = enemyBurnDuration;
+                    }
+                }
+
+                if (enemy) {
+                    // 簡單的紅色濾鏡
+                    enemy.style.filter = "sepia(1) saturate(5) hue-rotate(-50deg) drop-shadow(0 0 10px red)";
+                }
+            }
+        }
+
+        // 檢查戰鬥是否結束
+        function checkBattleEnd() {
+            if (enemyHP <= 0) {
+                // 敵人被擊敗 - 保存戰鬥結果並返回宗門頁面
+                setTimeout(() => {
+                    // 獲取當前戰鬥的敵人ID(從localStorage讀取)
+                    const enemyData = localStorage.getItem("current-battle-enemy");
+                    let bossId = null;
+                    if (enemyData) {
+                        try {
+                            const enemy = JSON.parse(enemyData);
+                            bossId = enemy.id;
+                        } catch (e) {
+                            console.error("Failed to parse enemy data", e);
+                        }
+                    }
+
+                    // 保存戰鬥結果到 localStorage
+                    const battleResult = {
+                        win: true,
+                        bossId: bossId
+                    };
+                    localStorage.setItem("battle-result", JSON.stringify(battleResult));
+
+                    // 保存遊戲狀態
+                    if (window.GameStateManager) {
+                        window.GameStateManager.save();
+                    }
+
+                    // 返回宗門頁面
+                    if (window.opener) {
+                        window.close();
+                    } else {
+                        // Check for custom return path
+                        const returnTo = localStorage.getItem('battle-return-to');
+                        if (returnTo === 'inner_demon' || returnTo === 'monster_forest') {
+                            window.location.href = 'index.html';
+                        } else {
+                            window.location.href = 'faction.html';
+                        }
+                    }
+                }, 5000); // 延長至5秒,讓大招動畫播放完畢
+            } else if (playerHP <= 0) {
+                // 玩家被擊敗 - 保存失敗結果並返回宗門頁面
+                setTimeout(() => {
+                    // 獲取當前戰鬥的敵人ID
+                    const enemyData = localStorage.getItem("current-battle-enemy");
+                    let bossId = null;
+                    if (enemyData) {
+                        try {
+                            const enemy = JSON.parse(enemyData);
+                            bossId = enemy.id;
+                        } catch (e) {
+                            console.error("Failed to parse enemy data", e);
+                        }
+                    }
+
+                    // 保存戰鬥失敗結果
+                    const battleResult = {
+                        win: false,
+                        bossId: bossId
+                    };
+                    localStorage.setItem("battle-result", JSON.stringify(battleResult));
+
+                    if (window.opener) {
+                        window.close();
+                    } else {
+                        // Check for custom return path
+                        const returnTo = localStorage.getItem('battle-return-to');
+                        // alert("DEBUG: returnTo = " + returnTo); // Debugging
+                        if (returnTo === 'inner_demon' || returnTo === 'monster_forest') {
+                            window.location.href = 'index.html';
+                        } else {
+                            window.location.href = 'faction.html';
+                        }
+                    }
+                }, 3000); // 延長至3秒
+            }
+        }
+
+
+        // 執行治療類術法
+        function executeHealSkill(skill, bonus) {
+            let healAmount = skill.baseHeal;
+
+            // 如果是百分比 (<=1)
+            if (healAmount <= 1) {
+                const maxHp = window.state?.maxHp || playerUnit.maxHp || 100;
+                healAmount = Math.floor(maxHp * healAmount);
+            }
+
+            healAmount = Math.floor(healAmount * (1 + bonus));
+            healPlayer(healAmount);
+        }
+
+        // 執行護盾類術法
+        // 執行護盾類術法
+        function executeShieldSkill(skill, bonus) {
+            let shieldAmt = skill.shieldAmount;
+
+            // 百分比計算 (如果小於等於1，視為百分比)
+            if (shieldAmt <= 1) {
+                const maxHp = window.state?.maxHp || playerUnit.maxHp || 100;
+                shieldAmt = Math.floor(maxHp * shieldAmt);
+            }
+
+            shieldAmt = Math.floor(shieldAmt * (1 + bonus));
+
+            // 獲得護盾
+            window.playerShield = shieldAmt;
+            window.playerShieldDuration = skill.duration || 2;
+            updateHP();
+
+            // 顯示護盾效果
+            const player = document.getElementById("player");
+            // 黃色光暈代表護盾
+            player.style.boxShadow = "0 0 30px #ffd700, inset 0 0 20px #ffd700";
+
+            const r = player.getBoundingClientRect();
+            showDamage(r.left + 20, r.top - 40, `Shield +${shieldAmt}`, false, false, "#ffd700");
+        }
+
+        // 執行真氣恢復術法
+        function executeManaRestoreSkill(skill, bonus) {
+            const restoreAmount = Math.floor(skill.manaRestore * (1 + bonus));
+            playerMana = Math.min(playerMana + restoreAmount, playerMaxMana);
+            updateMana();
+
+            const player = document.getElementById("player");
+            const r = player.getBoundingClientRect();
+            const msg = document.createElement('div');
+            msg.className = "damage heal";
+            msg.style.left = r.left + 20 + "px";
+            msg.style.top = r.top - 20 + "px";
+            msg.style.color = "#4fc3f7";
+            msg.textContent = `+${restoreAmount} 真氣`;
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), 900);
+        }
+
+        // 執行增益類術法
+        function executeBuffSkill(skill, bonus) {
+            // 簡化:顯示buff訊息
+            const player = document.getElementById("player");
+            const r = player.getBoundingClientRect();
+
+            let buffText = "";
+            if (skill.attackBonus) buffText += `攻擊+${Math.floor(skill.attackBonus * 100)}% `;
+            if (skill.defenseBonus) buffText += `防禦+${Math.floor(skill.defenseBonus * 100)}% `;
+            if (skill.speedBonus) buffText += `速度+${Math.floor(skill.speedBonus * 100)}% `;
+
+            const msg = document.createElement('div');
+            msg.className = "damage heal";
+            msg.style.left = r.left + 20 + "px";
+            msg.style.top = r.top - 20 + "px";
+            msg.style.color = "#ffd700";
+            msg.textContent = buffText;
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), 1500);
+
+            // 光效
+            player.style.boxShadow = "0 0 40px #ffd700";
+            setTimeout(() => {
+                player.style.boxShadow = "";
+            }, 3000);
+        }
+
+        // 播放術法動畫(簡化版)
+        // ⭐ 技能動畫系統 - 可擴展設計
+        function playSkillAnimation(skill) {
+            if (!skill) return;
+
+            const fightArea = document.querySelector(".fight-area");
+            if (!fightArea) return;
+
+            // 技能動畫映射表 - 新增技能時在這裡添加映射即可
+            const animationMap = {
+                // === 五行小技能 (簡潔動畫) ===
+                'fire_fox': () => animateFoxFire(fightArea),
+                'water_stream': () => animateWaterStream(fightArea),
+                'wood_leaf': () => animateHolyHeal(fightArea),
+                'wood_leaf': () => animateHolyHeal(fightArea),
+                'metal_sword': () => animateFlyingSword(fightArea),
+                'earth_rock': () => animateGiantRockSmash(fightArea),
+
+                // === 五行大招 (超華麗電影級動畫) ===
+                'fire_lotus': () => animateUltimateLotus(fightArea),
+                'fire_meteor': () => animateUltimateMeteor(fightArea),
+                'water_vortex': () => animateUltimateWaterDragon(fightArea),
+                'water_dragon': () => animateUltimateWaterDragon(fightArea),
+                'wood_tree': () => animateUltimateTreeOfLife(fightArea),
+                'metal_storm': () => animateUltimateGoldenCircle(fightArea),
+                'metal_golden': () => animateUltimateGoldenCircle(fightArea),
+                'earth_meteor': () => animateUltimateMeteor(fightArea),
+                // 可以繼續添加更多技能...
+            };
+
+            // 檢查是否有專屬動畫,沒有則使用通用閃光效果
+            const animationFunc = animationMap[skill.id];
+            if (animationFunc) {
+                try {
+                    animationFunc();
+                } catch (e) {
+                    console.warn(`Animation error for ${skill.id}:`, e);
+                    playGenericFlash(fightArea, skill);
+                }
+            } else {
+                // 通用閃光效果(適用於沒有專屬動畫的技能)
+                playGenericFlash(fightArea, skill);
+            }
+        }
+
+        // 通用閃光效果
+        function playGenericFlash(fightArea, skill) {
+            // 根據勢力或元素使用不同顏色
+            let color = "#ffffff";
+            if (skill.element === "fire") color = "#ff6b6b";
+            else if (skill.element === "water") color = "#4dabf7";
+            else if (skill.element === "wood") color = "#51cf66";
+            else if (skill.element === "metal") color = "#ffd43b";
+            else if (skill.element === "earth") color = "#a0785a";
+            else if (skill.faction === "丹塔") color = "#90ee90";
+            else if (skill.faction === "陣殿") color = "#ffd700";
+            else if (skill.faction === "器閣") color = "#c0c0c0";
+            else if (skill.faction === "符盟") color = "#ff69b4";
+
+            const flash = document.createElement("div");
+            flash.style.cssText = `
+                position: absolute;
+                inset: 0;
+                background: radial-gradient(circle, ${color}40 0%, transparent 70%);
+                opacity: 0;
+                pointer-events: none;
+                animation: flashFade 0.6s ease-out forwards;
+                z-index: 100;
+            `;
+            fightArea.appendChild(flash);
+            setTimeout(() => flash.remove(), 600);
+        }
+
+        function shakeBattle() {
+            const fight = document.querySelector(".fight-area");
+            fight.classList.add("big-shake");
+
+            const flash = document.createElement("div");
+            flash.className = "screen-flash";
+            fight.appendChild(flash);
+            setTimeout(() => flash.remove(), 400);
+
+            setTimeout(() => fight.classList.remove("big-shake"), 600);
+        }
+
+        // ⭐ 技能專屬動畫函數庫 - 可擴展設計
+        // 新增技能時,在這裡添加對應的動畫函數,然後在 playSkillAnimation 的映射表中註冊即可
+
+        // === 火系動畫 ===
+        function animateFoxFire(fightArea) {
+            const player = document.getElementById("player");
+            const enemy = document.getElementById("enemy");
+            if (!player || !enemy) return;
+
+            const pRect = player.getBoundingClientRect();
+            const eRect = enemy.getBoundingClientRect();
+            const aRect = fightArea.getBoundingClientRect();
+
+            const fox = document.createElement("div");
+            fox.className = "fox-fire fox-fire-anim";
+
+            const dist = eRect.left - pRect.left - 60;
+            const startX = (pRect.right - aRect.left) - 10;
+            const startY = (pRect.top - aRect.top) + 20;
+
+            fox.style.left = startX + "px";
+            fox.style.top = startY + "px";
+            fox.style.setProperty("--travel", (dist + 40) + "px");
+
+            fightArea.appendChild(fox);
+
+            setTimeout(() => {
+                const boom = document.createElement("div");
+                boom.className = "boom-effect";
+                boom.style.left = (eRect.left - aRect.left + 20) + "px";
+                boom.style.top = (eRect.top - aRect.top + 10) + "px";
+                fightArea.appendChild(boom);
+                setTimeout(() => boom.remove(), 450);
+                fox.remove();
+            }, 450);
+        }
+
+        function animateLotusBloom(fightArea) {
+            const tint = document.createElement("div");
+            tint.className = "fire-tint";
+            fightArea.appendChild(tint);
+
+            const lotus = document.createElement("div");
+            lotus.className = "lotus-container";
+
+            for (let i = 0; i < 8; i++) {
+                const petal = document.createElement("div");
+                petal.className = "lotus-petal";
+                petal.style.setProperty("--angle", (i * 45) + "deg");
+                lotus.appendChild(petal);
+            }
+
+            fightArea.appendChild(lotus);
+
+            setTimeout(() => {
+                tint.remove();
+                lotus.remove();
+            }, 4000);
+        }
+
+        function animateMeteor(fightArea) {
+            const enemy = document.getElementById("enemy");
+            if (!enemy) return;
+
+            const eRect = enemy.getBoundingClientRect();
+            const aRect = fightArea.getBoundingClientRect();
+
+            const meteor = document.createElement("div");
+            meteor.className = "meteor";
+            meteor.style.left = (eRect.left - aRect.left + 20) + "px";
+            meteor.style.top = "-50px";
+
+            const trail = document.createElement("div");
+            trail.className = "meteor-trail";
+            meteor.appendChild(trail);
+
+            fightArea.appendChild(meteor);
+
+            setTimeout(() => {
+                const flash = document.createElement("div");
+                flash.className = "screen-flash";
+                fightArea.appendChild(flash);
+                setTimeout(() => flash.remove(), 400);
+
+                shakeBattle();
+                meteor.remove();
+            }, 1200);
+        }
+
+        // === 水系動畫 ===
+        function animateWaterStream(fightArea) {
+            const player = document.getElementById("player");
+            const enemy = document.getElementById("enemy");
+            if (!player || !enemy) return;
+
+            const pRect = player.getBoundingClientRect();
+            const eRect = enemy.getBoundingClientRect();
+            const aRect = fightArea.getBoundingClientRect();
+
+            const stream = document.createElement("div");
+            stream.className = "aqua-stream aqua-anim";
+
+            const dist = eRect.left - pRect.left - 60;
+            const startX = (pRect.right - aRect.left) - 10;
+            const startY = (pRect.top - aRect.top) + 30;
+
+            stream.style.left = startX + "px";
+            stream.style.top = startY + "px";
+            stream.style.setProperty("--travel", (dist + 30) + "px");
+
+            fightArea.appendChild(stream);
+
+            setTimeout(() => {
+                const boom = document.createElement("div");
+                boom.className = "ice-explosion icon-boom";
+                boom.style.left = (eRect.left - aRect.left + 20) + "px";
+                boom.style.top = (eRect.top - aRect.top + 10) + "px";
+                fightArea.appendChild(boom);
+                setTimeout(() => boom.remove(), 450);
+                stream.remove();
+            }, 400);
+        }
+
+        function animateWaterDragon(fightArea) {
+            const vortex = document.createElement("div");
+            vortex.className = "water-vortex";
+            vortex.innerHTML = "🌊";
+            fightArea.appendChild(vortex);
+
+            setTimeout(() => vortex.remove(), 3000);
+        }
+
+        // === 木系動畫 ===
+        function animateHolyHeal(fightArea) {
+            const player = document.getElementById("player");
+            if (!player) return;
+
+            // 聖光光暈
+            const aura = document.createElement("div");
+            aura.style.cssText = `
+                position: absolute;
+                inset: -20px;
+                background: radial-gradient(circle, rgba(255,215,0,0.4) 0%, transparent 70%);
+                border-radius: 50%;
+                z-index: 10;
+                animation: pulse 1s ease-out;
+            `;
+            player.appendChild(aura);
+            setTimeout(() => aura.remove(), 1000);
+
+            // 上升的聖光粒子
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => {
+                    const light = document.createElement("div");
+                    light.textContent = "✨";
+                    light.style.cssText = `
+                        position: absolute;
+                        color: #ffd700;
+                        font-size: ${10 + Math.random() * 15}px;
+                        left: ${Math.random() * 100}%;
+                        top: 100%;
+                        opacity: 0;
+                        transition: all 1s ease-out;
+                        text-shadow: 0 0 5px gold;
+                        z-index: 101;
+                    `;
+                    // 隨機位置在玩家周圍
+                    const pRect = player.getBoundingClientRect();
+                    const aRect = fightArea.getBoundingClientRect();
+                    light.style.left = (pRect.left - aRect.left + Math.random() * 60) + "px";
+                    light.style.top = (pRect.top - aRect.top + 40) + "px";
+
+                    fightArea.appendChild(light);
+
+                    // 動畫: 上升並淡出
+                    setTimeout(() => {
+                        light.style.top = (pRect.top - aRect.top - 50 - Math.random() * 50) + "px";
+                        light.style.opacity = "1";
+                        light.style.transform = "scale(1.2)";
+                    }, 50);
+
+                    setTimeout(() => {
+                        light.style.opacity = "0";
+                    }, 600);
+
+                    setTimeout(() => light.remove(), 1000);
+                }, i * 60);
+            }
+        }
+
+        function animateTreeGrowth(fightArea) {
+            const tree = document.createElement("div");
+            tree.className = "tree-growth";
+            tree.innerHTML = `
+                <div class="trunk"></div>
+                <div class="canopy">🌳</div>
+            `;
+            fightArea.appendChild(tree);
+
+            setTimeout(() => tree.remove(), 4000);
+        }
+
+        // === 金系動畫 ===
+        // === 金系動畫 ===
+        function animateFlyingSword(fightArea) {
+            const player = document.getElementById("player");
+            const enemy = document.getElementById("enemy");
+            if (!player || !enemy) return;
+
+            const pRect = player.getBoundingClientRect();
+            const eRect = enemy.getBoundingClientRect();
+            const aRect = fightArea.getBoundingClientRect();
+
+            // 創建飛劍
+            const sword = document.createElement("img");
+            sword.src = "image/aAA0lnedwg-Photoroom.png";
+            sword.className = "sword-projectile";
+            sword.style.cssText = `
+                position: absolute;
+                width: 60px;
+                height: auto;
+                left: ${(pRect.left - aRect.left + 20)}px;
+                top: ${(pRect.top - aRect.top)}px;
+                transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                z-index: 100;
+                filter: drop-shadow(0 0 5px gold);
+            `;
+
+            // 計算角度
+            const deltaX = (eRect.left - pRect.left);
+            const deltaY = (eRect.top - pRect.top);
+            const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI) - 90; // +45 校正圖片方向 (原本+90可能過度旋轉)
+
+            sword.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+
+            fightArea.appendChild(sword);
+
+            // 發射
+            setTimeout(() => {
+                sword.style.left = (eRect.left - aRect.left + 40) + "px";
+                sword.style.top = (eRect.top - aRect.top + 40) + "px";
+            }, 50);
+
+            // 命中
+            setTimeout(() => {
+                // 衝擊波
+                const boom = document.createElement("div");
+                boom.style.cssText = `
+                    position: absolute;
+                    width: 50px;
+                    height: 50px;
+                    border: 2px solid gold;
+                    border-radius: 50%;
+                    left: ${(eRect.left - aRect.left + 40)}px;
+                    top: ${(eRect.top - aRect.top + 40)}px;
+                    transform: translate(-50%, -50%) scale(0);
+                    transition: all 0.3s ease-out;
+                    z-index: 101;
+                    box-shadow: 0 0 10px gold;
+                `;
+                fightArea.appendChild(boom);
+
+                setTimeout(() => {
+                    boom.style.transform = "translate(-50%, -50%) scale(1.5)";
+                    boom.style.opacity = "0";
+                }, 50);
+
+                setTimeout(() => boom.remove(), 400);
+                sword.remove();
+
+                shakeBattle();
+            }, 450);
+        }
+
+        function animateGoldenCircle(fightArea) {
+            const circle = document.createElement("div");
+            circle.className = "golden-circle";
+            circle.innerHTML = "✨";
+            fightArea.appendChild(circle);
+
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => {
+                    const sword = document.createElement("div");
+                    sword.className = "circle-sword";
+                    sword.textContent = "⚔️";
+                    sword.style.setProperty("--angle", (i * 45) + "deg");
+                    circle.appendChild(sword);
+                }, i * 100);
+            }
+
+            setTimeout(() => circle.remove(), 5000);
+        }
+
+        // === 土系動畫 ===
+        function animateGiantRockSmash(fightArea) {
+            const enemy = document.getElementById("enemy");
+            if (!enemy) return;
+
+            const eRect = enemy.getBoundingClientRect();
+            const aRect = fightArea.getBoundingClientRect();
+
+            // 1. 地面陰影 (預警)
+            const shadow = document.createElement("div");
+            shadow.style.cssText = `
+                position: absolute;
+                width: 20px;
+                height: 10px;
+                background: rgba(0, 0, 0, 0.5);
+                border-radius: 50%;
+                left: ${(eRect.left - aRect.left + 40)}px;
+                top: ${(eRect.top - aRect.top + 80)}px; /* 在腳下 */
+                transform: translate(-50%, -50%);
+                transition: all 0.6s cubic-bezier(0.5, 0, 0.75, 0);
+                z-index: 100;
+            `;
+            fightArea.appendChild(shadow);
+
+            // 陰影變大
+            setTimeout(() => {
+                shadow.style.width = "100px";
+                shadow.style.height = "30px";
+                shadow.style.opacity = "0.8";
+            }, 50);
+
+            // 2. 巨石落下
+            const rock = document.createElement("div");
+            rock.textContent = "🪨";
+            rock.style.cssText = `
+                position: absolute;
+                font-size: 80px;
+                left: ${(eRect.left - aRect.left + 40)}px;
+                top: -100px;
+                transform: translate(-50%, -50%);
+                transition: all 0.6s cubic-bezier(0.5, 0, 0.75, 0);
+                z-index: 102;
+                filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
+            `;
+            fightArea.appendChild(rock);
+
+            setTimeout(() => {
+                rock.style.top = (eRect.top - aRect.top + 20) + "px"; // 砸中位置
+            }, 50);
+
+            // 3. 撞擊
+            setTimeout(() => {
+                // 震動
+                shakeBattle();
+
+                // 碎石飛濺
+                for (let i = 0; i < 8; i++) {
+                    const debris = document.createElement("div");
+                    debris.textContent = "☁️"; // 塵土
+                    debris.style.cssText = `
+                        position: absolute;
+                        font-size: ${20 + Math.random() * 10}px;
+                        left: ${(eRect.left - aRect.left + 40)}px;
+                        top: ${(eRect.top - aRect.top + 60)}px;
+                        transform: translate(-50%, -50%);
+                        transition: all 0.5s ease-out;
+                        z-index: 103;
+                        opacity: 0.8;
+                        filter: grayscale(100%);
+                    `;
+                    fightArea.appendChild(debris);
+
+                    setTimeout(() => {
+                        const angle = Math.random() * Math.PI * 2;
+                        const dist = 50 + Math.random() * 50;
+                        debris.style.left = (eRect.left - aRect.left + 40 + Math.cos(angle) * dist) + "px";
+                        debris.style.top = (eRect.top - aRect.top + 60 + Math.sin(angle) * dist) + "px";
+                        debris.style.opacity = "0";
+                    }, 50);
+
+                    setTimeout(() => debris.remove(), 600);
+                }
+
+                // 移除石頭與陰影
+                setTimeout(() => {
+                    rock.style.opacity = "0";
+                    shadow.style.opacity = "0";
+                }, 200);
+
+                setTimeout(() => {
+                    rock.remove();
+                    shadow.remove();
+                }, 800);
+
+            }, 600);
+        }
+
+        function checkTurn() {
+            if (isBattleAnimating) return false; // 動畫播放中，禁止操作
+            if (!isPlayerTurn || playerHP <= 0 || enemyHP <= 0) return false;
+            return true;
+        }
+
+        // ⭐ 檢查並消耗靈氣
+        function checkAndConsumeMana(skillId) {
+            if (!window.SKILLS || !window.SKILLS[skillId]) return true;
+
+            const skill = window.SKILLS[skillId];
+            const manaCost = skill.manaCost || 0;
+
+            if (manaCost === 0) return true;
+
+            const currentMana = window?.mana || 0;
+
+            if (currentMana < manaCost) {
+                const msg = document.createElement('div');
+                msg.style.cssText = 'position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);background:rgba(0,100,200,0.9);color:#fff;padding:15px 25px;border-radius:8px;font-size:16px;z-index:10000;box-shadow:0 4px 12px rgba(0,0,0,0.3)';
+                msg.textContent = `靈氣不足！需要 ${manaCost} 點（當前: ${currentMana}）`;
+                document.body.appendChild(msg);
+                setTimeout(() => msg.remove(), 2000);
+                return false;
+            }
+
+            window.mana -= manaCost;
+            updateManaBar();
+            if (window.safeSave) window.safeSave();
+            return true;
+        }
+
+        // 更新靈氣條
+        function updateManaBar() {
+            const mana = window?.mana || 0;
+            const maxMana = window?.maxMana || 100;
+            const percent = (mana / maxMana) * 100;
+
+            const manaBar = document.getElementById('pmana');
+            const manaText = document.getElementById('player-mana-text');
+
+            if (manaBar) manaBar.style.width = percent + '%';
+            if (manaText) manaText.textContent = `${Math.floor(mana)}/${maxMana}`;
+        }
+
+        function slashAttack() {
+            if (!checkTurn()) return;
+            endPlayerTurn();
+
+            const slash = document.querySelector(".slash");
+            const area = document.querySelector(".fight-area");
+
+            const pRect = document.getElementById("player").getBoundingClientRect();
+            const eRect = document.getElementById("enemy").getBoundingClientRect();
+            const aRect = area.getBoundingClientRect();
+
+            const startX = (pRect.left - aRect.left) + pRect.width / 2 - 100;
+            const startY = (pRect.top - aRect.top) + pRect.height / 2 - 100;
+
+            const targetX = (eRect.left - aRect.left) + eRect.width / 2;
+            const dist = targetX - ((pRect.left - aRect.left) + pRect.width / 2);
+
+            slash.style.left = startX + "px";
+            slash.style.top = startY + "px";
+            slash.style.setProperty("--travel", (dist + 40) + "px");
+
+            slash.classList.remove("slash-animate");
+            void slash.offsetWidth;
+            slash.classList.add("slash-animate");
+
+            // 普通斬擊不需要學習，直接計算傷害
+            const { dmg, isCrit } = getSkillDamage(1.0, null, null); // 不綁定技能ID，基礎攻擊
+            setTimeout(() => {
+                damageEnemy(dmg, isCrit);
+
+                // ⭐ 普攻獲得1點SP和5點能量
+                gainSP(SP_GAIN_FROM_ATTACK, true);
+                gainEnergy(ENERGY_GAIN_FROM_ATTACK, true);
+            }, 200);
+        }
+
+        function enemySlash() {
+            const slash = document.querySelector(".slash");
+            const glow = slash.querySelector(".glow");
+            glow.style.boxShadow = "20px -20px 0 0 #ff4444";
+            glow.style.filter = "drop-shadow(0 0 10px rgba(255, 100, 100, 0.6))";
+            glow.style.transform = "translate(-60%, -40%) rotate(225deg)";
+
+            const area = document.querySelector(".fight-area");
+            const pRect = document.getElementById("player").getBoundingClientRect();
+            const eRect = document.getElementById("enemy").getBoundingClientRect();
+            const aRect = area.getBoundingClientRect();
+
+            const startX = (eRect.left - aRect.left) + eRect.width / 2 - 100;
+            const startY = (eRect.top - aRect.top) + eRect.height / 2 - 100;
+
+            const targetX = (pRect.left - aRect.left) + pRect.width / 2;
+            const dist = targetX - ((eRect.left - aRect.left) + eRect.width / 2);
+
+            slash.style.left = startX + "px";
+            slash.style.top = startY + "px";
+            slash.style.setProperty("--travel", (dist - 40) + "px");
+
+            slash.classList.remove("slash-animate");
+            void slash.offsetWidth;
+            slash.classList.add("slash-animate");
+
+            // 敵人攻擊傷害計算（使用 battle.js 公式）
+            let dmg, isCrit;
+            if (typeof performAttack === 'function') {
+                const result = performAttack(enemyUnit, playerUnit);
+                dmg = result.damage;
+                isCrit = result.isCrit;
+            } else {
+                // 備用簡單計算
+                const baseAtk = enemyUnit.attack || 10;
+                const playerDef = playerUnit.defense || 0;
+                const defMult = 1 - (playerDef / (playerDef + 100));
+                const baseDmg = Math.floor(baseAtk * defMult);
+
+                const critRate = enemyUnit.critRate || 0.05;
+                isCrit = Math.random() < critRate;
+                dmg = isCrit ? Math.floor(baseDmg * (1 + (enemyUnit.critDamage || 0.5))) : baseDmg;
+                dmg = Math.max(1, dmg);
+            }
+
+            setTimeout(() => {
+                damagePlayer(dmg, isCrit);
+                setTimeout(() => {
+                    glow.style.boxShadow = "20px -20px 0 0 #f0f8ff";
+                    glow.style.filter = "";
+                    glow.style.transform = "";
+                }, 500);
+                endEnemyTurn();
+            }, 300);
+        }
+
+        function enemyFireball() {
+            const fb = document.createElement("div");
+            fb.className = "fox-fire fox-fire-anim";
+            fb.style.filter = "hue-rotate(-50deg)";
+
+            const area = document.querySelector(".fight-area");
+            const p = document.getElementById("player").getBoundingClientRect();
+            const e = document.getElementById("enemy").getBoundingClientRect();
+            const a = area.getBoundingClientRect();
+
+            const dist = p.left - e.left + 60;
+            const startX = (e.left - a.left) - 10;
+            const startY = (e.top - a.top) + 20;
+
+            fb.style.left = startX + "px";
+            fb.style.top = startY + "px";
+            fb.style.setProperty("--travel", (dist - 40) + "px");
+
+            area.appendChild(fb);
+
+            setTimeout(() => {
+                const boom = document.createElement("div");
+                boom.className = "boom-effect";
+                boom.style.left = (p.left + 20) + "px";
+                boom.style.top = (p.top - 10) + "px";
+                document.body.appendChild(boom);
+                setTimeout(() => boom.remove(), 400);
+
+                const dmg = Math.round(enemyUnit.attack * 1.2);
+                damagePlayer(dmg);
+                fb.remove();
+                endEnemyTurn();
+            }, 550);
+        }
+
+        function enemyUltimate() {
+            shakeBattle();
+            const area = document.querySelector(".fight-area");
+            const flash = document.createElement("div");
+            flash.className = "screen-flash";
+            flash.style.background = "red";
+            area.appendChild(flash);
+            setTimeout(() => flash.remove(), 500);
+
+            setTimeout(() => {
+                const dmg = Math.round(enemyUnit.attack * 2.0);
+                damagePlayer(dmg);
+                endEnemyTurn();
+            }, 600);
+        }
+
+        function fireballAttack() {
+            if (!checkTurn()) return;
+            if (!checkLearned('fire')) return;
+            if (!checkMana('fire')) return; // Check and consume mana
+            endPlayerTurn();
+
+            const fb = document.createElement("div");
+            fb.className = "fox-fire fox-fire-anim";
+
+            const area = document.querySelector(".fight-area");
+            const p = document.getElementById("player").getBoundingClientRect();
+            const e = document.getElementById("enemy").getBoundingClientRect();
+            const a = area.getBoundingClientRect();
+
+            const dist = e.left - p.left - 60;
+            const startX = (p.right - a.left) - 10;
+            const startY = (p.top - a.top) + 20;
+
+            fb.style.left = startX + "px";
+            fb.style.top = startY + "px";
+            fb.style.setProperty("--travel", (dist + 40) + "px");
+
+            area.appendChild(fb);
+
+            setTimeout(() => {
+                const boom = document.createElement("div");
+                boom.className = "boom-effect";
+                boom.style.left = (e.left + 20) + "px";
+                boom.style.top = (e.top - 10) + "px";
+                document.body.appendChild(boom);
+                setTimeout(() => boom.remove(), 400);
+
+                if (!checkLearned('fire')) { fb.remove(); return; } // Should check before anim, but consistent structure
+                const { dmg, isCrit } = getSkillDamage(1.3, "fire", "fire");
+                damageEnemy(dmg, isCrit);
+                fb.remove();
+            }, 550);
+        }
+
+        function earthSpikeAttack() {
+            if (!checkTurn()) return;
+            if (!checkLearned('earth')) return;
+            if (!checkMana('earth')) return; // Check and consume mana
+            endPlayerTurn();
+
+            const rock = document.createElement("div");
+            rock.className = "rock-heavy rock-anim";
+
+            const enemy = document.getElementById("enemy");
+            const area = document.querySelector(".fight-area");
+
+            const eRect = enemy.getBoundingClientRect();
+            const areaRect = area.getBoundingClientRect();
+
+            const left = (eRect.left - areaRect.left) + 15;
+            const top = (eRect.top - areaRect.top) - 80;
+
+            rock.style.left = left + "px";
+            rock.style.top = top + "px";
+
+            area.appendChild(rock);
+
+            setTimeout(() => {
+                shakeBattle();
+                setTimeout(() => {
+                    shakeBattle();
+                    if (!checkLearned('earth')) return;
+                    const { dmg, isCrit } = getSkillDamage(1.1, "earth", "earth");
+                    damageEnemy(dmg, isCrit);
+                    setTimeout(() => rock.remove(), 200);
+                }, 500);
+            }, 500);
+        }
+
+        function iceAttack() {
+            if (!checkTurn()) return;
+            if (!checkLearned('water')) return;
+            if (!checkMana('water')) return; // Check and consume mana
+            endPlayerTurn();
+
+            isEnemyFrozen = true;
+
+            const player = document.getElementById("player");
+            const enemy = document.getElementById("enemy");
+            const area = document.querySelector(".fight-area");
+
+            const pRect = player.getBoundingClientRect();
+            const eRect = enemy.getBoundingClientRect();
+            const aRect = area.getBoundingClientRect();
+            const dist = eRect.left - pRect.left - 60;
+
+            const stream = document.createElement("div");
+            stream.className = "aqua-stream aqua-anim";
+
+            const startX = (pRect.right - aRect.left) - 10;
+            const startY = (pRect.top - aRect.top) + 30;
+
+            stream.style.left = startX + "px";
+            stream.style.top = startY + "px";
+            stream.style.setProperty("--travel", (dist + 30) + "px");
+
+            area.appendChild(stream);
+
+            setTimeout(() => {
+                const boom = document.createElement("div");
+                boom.className = "ice-explosion icon-boom";
+                boom.style.left = (eRect.left + 20) + "px";
+                boom.style.top = (eRect.top + 10) + "px";
+                document.body.appendChild(boom);
+                setTimeout(() => boom.remove(), 450);
+
+                if (!checkLearned('water')) return;
+                const { dmg, isCrit } = getSkillDamage(0.9, "water", "water");
+                damageEnemy(dmg, isCrit);
+
+                enemy.classList.add("frozen");
+                setTimeout(() => enemy.classList.remove("frozen"), 1200);
+            }, 380);
+        }
+
+        function healSkill() {
+            if (!checkTurn()) return;
+            if (!checkLearned('wood')) return;
+            if (!checkMana('wood')) return; // Check and consume mana
+            endPlayerTurn();
+
+            const player = document.getElementById("player");
+            const area = document.querySelector(".fight-area");
+
+            const pRect = player.getBoundingClientRect();
+            const aRect = area.getBoundingClientRect();
+
+            const centerX = (pRect.left - aRect.left) + pRect.width / 2;
+            const centerY = (pRect.top - aRect.top) + pRect.height / 2;
+
+            const leaf = document.createElement("div");
+            leaf.className = "spirit-leaf leaf-anim";
+            leaf.style.left = (centerX - 15) + "px";
+            leaf.style.top = (centerY + 20) + "px";
+
+            area.appendChild(leaf);
+            setTimeout(() => leaf.remove(), 1000);
+
+            if (!checkLearned('wood')) return;
+            let bonus = 0;
+            if (window.state && window.state.learnedSkills) {
+                bonus = window.getProficiencyBonus(window.state.learnedSkills['wood'] || 0);
+            }
+            healPlayer(Math.floor(18 * (1 + bonus)));
+        }
+
+        function swordSkill() {
+            if (!checkTurn()) return;
+            if (!checkLearned('metal')) return;
+            if (!checkMana('metal')) return; // Check and consume mana
+            endPlayerTurn();
+
+            const player = document.getElementById("player");
+            const enemy = document.getElementById("enemy");
+            const area = document.querySelector(".fight-area");
+
+            const pRect = player.getBoundingClientRect();
+            const eRect = enemy.getBoundingClientRect();
+            const aRect = area.getBoundingClientRect();
+
+            const swordWidth = 18;
+            const swordHeight = 90;
+
+            const startX = (pRect.right - aRect.left) - swordWidth / 2;
+            const startY = (pRect.top - aRect.top) - swordHeight - 40;
+
+            const targetX = (eRect.left - aRect.left) + eRect.width / 2;
+            const targetY = (eRect.top - aRect.top) + eRect.height / 2;
+
+            const dx = targetX - startX;
+            const dy = targetY - startY;
+
+            const angleDeg = Math.atan2(dy, dx) * (180 / Math.PI);
+            const cssAngle = angleDeg + 90;
+
+            const sword = document.createElement("div");
+            sword.className = "sky-sword";
+            sword.style.left = startX + "px";
+            sword.style.top = startY + "px";
+
+            sword.innerHTML = `
+<div class="blade"></div>
+<div class="tip"></div>
+<div class="guard"></div>
+<div class="handle"></div>
+`;
+
+            sword.style.setProperty("--dx", dx + "px");
+            sword.style.setProperty("--dy", dy + "px");
+            sword.style.setProperty("--angle", cssAngle + "deg");
+
+            area.appendChild(sword);
+
+            requestAnimationFrame(() => {
+                sword.classList.add("sword-shoot-anim");
+            });
+
+            setTimeout(() => {
+                setTimeout(() => {
+                    if (!checkLearned('metal')) return;
+                    const { dmg, isCrit } = getSkillDamage(1.4, "metal", "metal");
+                    damageEnemy(dmg, isCrit);
+                }, 320);
+
+                setTimeout(() => {
+                    sword.remove();
+                }, 800);
+            }, 100);
+        }
+
+        function woodUltimate() {
+            if (!checkTurn()) return;
+            if (!checkLearned('woodUlt')) return;
+            if (!checkMana('woodUlt')) return; // Check and consume mana
+            endPlayerTurn();
+
+            const area = document.querySelector(".fight-area");
+            const player = document.getElementById("player");
+            const pRect = player.getBoundingClientRect();
+            const aRect = area.getBoundingClientRect();
+
+            shakeBattle();
+
+            const tree = document.createElement("div");
+            tree.className = "ancient-tree tree-anim";
+            area.appendChild(tree);
+            setTimeout(() => tree.remove(), 5000);
+
+            setTimeout(() => {
+                healPlayer(45);
+                setTimeout(() => {
+                    healPlayer(45);
+                    if (!checkLearned('woodUlt')) return;
+                    const { dmg, isCrit } = getSkillDamage(3.5, "wood", "woodUlt");
+                    damageEnemy(dmg, isCrit);
+                }, 1200);
+            }, 1000);
+        }
+
+        function waterUltimate() {
+            if (!checkTurn()) return;
+            if (!checkLearned('waterUlt')) return;
+            if (!checkMana('waterUlt')) return; // Check and consume mana
+            endPlayerTurn();
+
+            isEnemyFrozen = true;
+
+            const area = document.querySelector(".fight-area");
+            const eRect = document.getElementById("enemy").getBoundingClientRect();
+            const aRect = area.getBoundingClientRect();
+
+            shakeBattle();
+
+            const vortex = document.createElement("div");
+            vortex.className = "dragon-vortex vortex-anim";
+            const vX = (eRect.left - aRect.left) + eRect.width / 2 - 150;
+            const vY = (eRect.top - aRect.top) + eRect.height / 2 - 150;
+            vortex.style.left = vX + "px";
+            vortex.style.top = vY + "px";
+            area.appendChild(vortex);
+            setTimeout(() => vortex.remove(), 3500);
+
+            setTimeout(() => {
+                const enemy = document.getElementById("enemy");
+                enemy.classList.add("frozen");
+
+                if (!checkLearned('waterUlt')) return;
+                const { dmg, isCrit } = getSkillDamage(4.0, "water", "waterUlt");
+                damageEnemy(dmg, isCrit);
+
+                setTimeout(() => enemy.classList.remove("frozen"), 2500);
+            }, 1500);
+        }
+
+        function fireUltimate() {
+            if (!checkTurn()) return;
+            if (!checkLearned('fireUlt')) return;
+            if (!checkMana('fireUlt')) return; // Check and consume mana
+            endPlayerTurn();
+
+            const area = document.querySelector(".fight-area");
+            shakeBattle();
+
+            const tint = document.createElement("div");
+            tint.className = "fire-tint";
+            area.appendChild(tint);
+            setTimeout(() => tint.remove(), 5000);
+
+            const lotus = document.createElement("div");
+            lotus.className = "red-lotus lotus-anim";
+
+            for (let i = 0; i < 6; i++) {
+                const petal = document.createElement("div"); petal.className = "lotus-petal";
+                petal.style.transform = `rotate(${i * 60}deg)`; lotus.appendChild(petal);
+            } area.appendChild(lotus); setTimeout(() =>
+                lotus.remove(), 4500);
+
+            setTimeout(() => {
+                if (!checkLearned('fireUlt')) return;
+                const { dmg, isCrit } = getSkillDamage(4.5, "fire", "fireUlt");
+                damageEnemy(dmg, isCrit);
+            }, 2000);
+        }
+
+        function earthUltimate() {
+            if (!checkTurn()) return;
+            if (!checkLearned('earthUlt')) return;
+            if (!checkMana('earthUlt')) return; // Check and consume mana
+            endPlayerTurn();
+
+            const area = document.querySelector(".fight-area");
+            const eRect = document.getElementById("enemy").getBoundingClientRect();
+            const aRect = area.getBoundingClientRect();
+
+            const meteor = document.createElement("div");
+            meteor.className = "meteor-ult meteor-anim";
+            meteor.style.left = "40%";
+            meteor.style.top = "10%";
+
+            const trail = document.createElement("div");
+            trail.className = "meteor-trail";
+            meteor.appendChild(trail);
+
+            area.appendChild(meteor);
+
+            setTimeout(() => {
+                shakeBattle();
+                const flash = document.createElement("div");
+                flash.className = "screen-flash";
+                area.appendChild(flash);
+                setTimeout(() => flash.remove(), 500);
+
+                meteor.remove();
+
+                if (!checkLearned('earthUlt')) return;
+                const { dmg, isCrit } = getSkillDamage(4.2, "earth", "earthUlt");
+                damageEnemy(dmg, isCrit);
+            }, 1200);
+        }
+
+        function goldUltimate() {
+            if (!checkTurn()) return;
+            if (!checkLearned('goldUltimate')) return;
+            if (!checkMana('goldUltimate')) return; // Check and consume mana
+            endPlayerTurn();
+
+            const area = document.querySelector(".fight-area");
+            const eRect = document.getElementById("enemy").getBoundingClientRect();
+            const aRect = area.getBoundingClientRect();
+
+            shakeBattle();
+
+            const circle = document.createElement("div");
+            circle.className = "gold-circle";
+            const cX = (eRect.left - aRect.left) + eRect.width / 2 - 110;
+            const cY = (eRect.top - aRect.top) + eRect.height / 2 - 110;
+            circle.style.left = cX + "px";
+            circle.style.top = cY + "px";
+            area.appendChild(circle);
+            setTimeout(() => circle.remove(), 5000);
+
+            const swordCount = 8;
+            for (let i = 0; i < swordCount; i++) {
+                setTimeout(() => {
+                    spawnHomingSword();
+                }, i * 200);
+            }
+
+            function spawnHomingSword() {
+                const sword = document.createElement("div");
+                sword.className = "sky-sword";
+
+                const startX = Math.random() * aRect.width;
+                const startY = -100;
+
+                const targetX = (eRect.left - aRect.left) + eRect.width / 2;
+                const targetY = (eRect.top - aRect.top) + eRect.height / 2;
+
+                const dx = targetX - startX;
+                const dy = targetY - startY;
+                const angleDeg = Math.atan2(dy, dx) * (180 / Math.PI);
+
+                sword.style.left = startX + "px";
+                sword.style.top = startY + "px";
+
+                sword.innerHTML = `
+        <div class="blade" style="background:linear-gradient(to bottom, #fff, #ffe082);"></div>
+        <div class="tip"></div>
+        <div class="guard" style="background:#ffb300;"></div>
+        <div class="handle"></div>
+        `;
+
+                sword.style.setProperty("--dx", dx + "px");
+                sword.style.setProperty("--dy", dy + "px");
+                sword.style.setProperty("--angle", (angleDeg + 90) + "deg");
+
+                area.appendChild(sword);
+
+                requestAnimationFrame(() => {
+                    sword.classList.add("sword-shoot-anim");
+                });
+
+                setTimeout(() => {
+                    if (checkLearned('goldUltimate')) { // check safely
+                        const { dmg, isCrit } = getSkillDamage(0.6, "metal", "goldUltimate");
+                        damageEnemy(dmg, isCrit);
+                    }
+                    sword.remove();
+                }, 600);
+            }
+        }
+
+        updateHP();
+        updateSP();
+        updateEnergy();
+        updateTurnUI();
+
+        // ==========================================
+        // === CANVAS PARTICLE SYSTEM (VISUAL ENGINE) ===
+        // ==========================================
+
+        const FXCanvas = {
+            canvas: null,
+            ctx: null,
+            particles: [],
+            width: 0,
+            height: 0,
+            active: false,
+
+            init() {
+                // Create Full Screen Canvas
+                if (this.canvas) return;
+                this.canvas = document.createElement('canvas');
+                this.canvas.style.cssText = 'position:fixed; inset:0; z-index:999999; pointer-events:none;';
+                document.body.appendChild(this.canvas);
+                this.ctx = this.canvas.getContext('2d');
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+                this.loop();
+            },
+
+            resize() {
+                this.width = window.innerWidth;
+                this.height = window.innerHeight;
+                this.canvas.width = this.width;
+                this.canvas.height = this.height;
+            },
+
+            addParticle(p) {
+                this.particles.push(p);
+                if (!this.active) this.loop();
+            },
+
+            loop() {
+                if (this.particles.length === 0) {
+                    this.ctx.clearRect(0, 0, this.width, this.height);
+                    this.active = false;
+                    return;
+                }
+                this.active = true;
+                requestAnimationFrame(() => this.loop());
+
+                // Clear with trail effect
+                this.ctx.globalCompositeOperation = 'destination-out';
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                this.ctx.fillRect(0, 0, this.width, this.height);
+                this.ctx.globalCompositeOperation = 'lighter';
+
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    const p = this.particles[i];
+                    p.update();
+                    p.draw(this.ctx);
+                    if (p.life <= 0) this.particles.splice(i, 1);
+                }
+            },
+
+            // Emitters
+            emitExplosion(x, y, color, count = 50, speed = 5) {
+                for (let i = 0; i < count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const vel = Math.random() * speed;
+                    this.addParticle(new Particle(x, y, Math.cos(angle) * vel, Math.sin(angle) * vel, color));
+                }
+            },
+
+            emitFlow(x, y, targetX, targetY, color, count = 20) {
+                const angle = Math.atan2(targetY - y, targetX - x);
+                const dist = Math.hypot(targetX - x, targetY - y);
+                const speed = 15;
+                for (let i = 0; i < count; i++) {
+                    const spread = (Math.random() - 0.5) * 0.5;
+                    this.addParticle(new Particle(x, y, Math.cos(angle + spread) * speed, Math.sin(angle + spread) * speed, color, dist / speed));
+                }
+            },
+
+            // Screen Shake
+            shake() {
+                document.body.style.transform = `translate(${Math.random() * 10 - 5}px, ${Math.random() * 10 - 5}px)`;
+                setTimeout(() => document.body.style.transform = 'none', 50);
+                setTimeout(() => document.body.style.transform = `translate(${Math.random() * 10 - 5}px, ${Math.random() * 10 - 5}px)`, 100);
+                setTimeout(() => document.body.style.transform = 'none', 150);
+            }
+        };
+
+        class Particle {
+            constructor(x, y, vx, vy, color, life = 60) {
+                this.x = x; this.y = y;
+                this.vx = vx; this.vy = vy;
+                this.color = color;
+                this.life = life;
+                this.maxLife = life;
+                this.size = Math.random() * 5 + 2;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life--;
+                this.size *= 0.95;
+            }
+            draw(ctx) {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Initialize Engine
+        FXCanvas.init();
+
+
+        // ==========================================
+        // === SKILL ANIMATION ROUTER ===
+        // ==========================================
+
+        function playSkillAnimation(skill) {
+            console.log("Playing Canvas FX for:", skill.id);
+            const p = document.getElementById("player").getBoundingClientRect();
+            const e = document.getElementById("enemy").getBoundingClientRect();
+            const cx = window.innerWidth / 2;
+            const cy = window.innerHeight / 2;
+
+            const targetX = e.left + e.width / 2;
+            const targetY = e.top + e.height / 2;
+            const startX = p.left + p.width / 2;
+            const startY = p.top + p.height / 2;
+
+            // 1. Ultimate Skills
+            if (skill.type === 'ultimate') {
+                FXCanvas.shake();
+                if (skill.element === '火') {
+                    // Fire Lotus: Massive red explosion from center
+                    FXCanvas.emitExplosion(cx, cy, '#ff3300', 300, 20);
+                    setTimeout(() => FXCanvas.emitExplosion(cx, cy, '#ffaa00', 200, 15), 200);
+                } else if (skill.element === '水') {
+                    // Water Vortex: Blue spiral
+                    FXCanvas.emitExplosion(cx, cy, '#00bfff', 300, 20);
+                    // Add more implosion logic if time permits, for now explosion is fine
+                } else if (skill.element === '木') {
+                    // Wood Tree: Green growth
+                    FXCanvas.emitExplosion(cx, window.innerHeight, '#4caf50', 300, 25);
+                    FXCanvas.emitExplosion(cx, cy, '#81c784', 100, 10);
+                } else if (skill.element === '土') {
+                    // Earth Meteor: Brown impact from top
+                    FXCanvas.emitFlow(cx, 0, cx, cy, '#795548', 50);
+                    setTimeout(() => FXCanvas.emitExplosion(cx, cy, '#5d4037', 400, 20), 400);
+                } else if (skill.element === '金') {
+                    // Metal: Gold sharp particles
+                    FXCanvas.emitExplosion(targetX, targetY, '#ffd700', 300, 30);
+                }
+                return;
+            }
+
+            // 2. Small Skills
+            if (skill.id === 'fire_fox') {
+                FXCanvas.emitFlow(startX, startY, targetX, targetY, '#ff5722', 20);
+                setTimeout(() => FXCanvas.emitExplosion(targetX, targetY, '#ff9800', 30, 5), 300);
+            } else if (skill.id === 'water_stream') {
+                FXCanvas.emitFlow(startX, startY, targetX, targetY, '#4fc3f7', 30);
+            } else if (skill.id === 'wood_leaf') {
+                FXCanvas.emitExplosion(startX, startY, '#66bb6a', 50, 3); // Heal self
+            } else if (skill.id === 'metal_sword') {
+                FXCanvas.emitFlow(startX, startY, targetX, targetY, '#cfd8dc', 10);
+                setTimeout(() => FXCanvas.emitExplosion(targetX, targetY, '#eceff1', 30, 8), 200);
+            } else if (skill.id === 'earth_rock') {
+                FXCanvas.emitFlow(targetX, 0, targetX, targetY, '#8d6e63', 10);
+                setTimeout(() => FXCanvas.emitExplosion(targetX, targetY, '#8d6e63', 40, 5), 400);
+            } else {
+                // Fallback
+                FXCanvas.emitExplosion(targetX, targetY, '#ffffff', 20, 5);
+            }
+        }
+
+        // Logic Handler (Keep strict same logic)
+        function useFactionSkill(skillId) {
+            if (!checkTurn()) return;
+            if (window.SKILLS && !window.SKILLS[skillId]) return;
+
+            const skill = window.SKILLS[skillId];
+
+            if (skill.type === 'ultimate') {
+                const energyNeeded = skill.energyCost || 100;
+                if (!checkEnergy(energyNeeded)) return;
+            } else {
+                if (!checkSP(skillId)) return;
+            }
+
+            endPlayerTurn();
+            playSkillAnimation(skill);
+
+            const delay = (skill.type === 'ultimate') ? 1000 : 500;
+
+            setTimeout(() => {
+                const proficiency = (window.state && window.state.learnedSkills) ? (window.state.learnedSkills[skillId] || 0) : 0;
+                const bonus = window.getProficiencyBonus ? window.getProficiencyBonus(proficiency) : 0;
+
+                if (skill.baseDamage) {
+                    let dmg = 0;
+                    let isCrit = false;
+                    const result = getSkillDamage(skill.baseDamage, skill.element || "physical", skillId);
+                    dmg = result.dmg;
+                    isCrit = result.isCrit;
+                    if (skill.hits && skill.hits > 1) {
+                        dmg = Math.floor(dmg * 0.9 * skill.hits);
+                        showFloatingText(`${skill.hits}連擊`, "", "enemy", "#ffeb3b");
+                    }
+                    damageEnemy(dmg, isCrit);
+                }
+
+                if (skill.baseHeal) {
+                    let heal = (skill.baseHeal < 1) ? (playerMaxHP * skill.baseHeal) : skill.baseHeal;
+                    heal = Math.floor(heal * (1 + bonus));
+                    healPlayer(heal);
+                }
+
+                if (skill.shieldAmount) {
+                    let shield = (skill.shieldAmount < 1) ? (playerMaxHP * skill.shieldAmount) : skill.shieldAmount;
+                    shield = Math.floor(shield * (1 + bonus));
+                    window.playerShield = (window.playerShield || 0) + shield;
+                    window.playerShieldDuration = skill.duration || 3;
+                    updateHP();
+                    showFloatingText("護盾", shield, "player", "#ffffff");
+                }
+
+                // Mana restore
+                if (skill.manaRestore) {
+                    window.mana = Math.min((window.mana || 0) + skill.manaRestore, window.maxMana || 100);
+                    updateManaBar();
+                    showFloatingText("回氣", skill.manaRestore, "player", "#00ccff");
+                }
+
+                // Status Effects
+                if (skill.element === '水' && skill.type === 'ultimate') {
+                    isEnemyFrozen = true;
+                    const enemy = document.getElementById("enemy");
+                    if (enemy) enemy.classList.add("frozen");
+                    showFloatingText("凍結", "", "enemy", "#00e5ff");
+                }
+                if (skill.element === '火' && Math.random() < (skill.burnChance || 0)) {
+                    enemyBurnDamage = playerUnit.attack * 0.2;
+                    enemyBurnDuration = 3;
+                    showFloatingText("燃燒", "", "enemy", "#ff5722");
+                }
+
+            }, delay);
+        }
+
+    </script>
+</body>
+
+</html>
